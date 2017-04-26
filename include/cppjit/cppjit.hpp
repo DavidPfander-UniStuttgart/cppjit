@@ -1,8 +1,8 @@
 #pragma once
 
 #include <fstream>
-#include <vector>
 #include <map>
+#include <vector>
 
 #include <dlfcn.h>
 
@@ -12,6 +12,11 @@ namespace detail {
 std::string kernels_tmp_dir("./kernels_tmp/");
 std::vector<void *> opened_kernel_libraries;
 // std::map<std::string, void *> kernel_symbol_map;
+std::map<std::string, std::string> kernel_source_map;
+
+void register_kernel(std::string kernel_name, std::string kernel_source) {
+  kernel_source_map[kernel_name] = kernel_source;
+}
 
 void compile_kernel(std::string kernel_source_dir, std::string kernel_name) {
   std::string source_file(kernel_source_dir + kernel_name + ".cpp");
@@ -44,7 +49,8 @@ void compile_inline_kernel(std::string kernel_inline_source,
 }
 
 void *load_kernel(std::string kernel_name) {
-  std::string library_file(detail::kernels_tmp_dir + "lib" + kernel_name + ".so");
+  std::string library_file(detail::kernels_tmp_dir + "lib" + kernel_name +
+                           ".so");
   void *kernel_library = dlopen(library_file.c_str(), RTLD_LAZY);
 
   if (!kernel_library) {
@@ -77,3 +83,39 @@ void finalize() {
   detail::opened_kernel_libraries.clear();
 }
 }
+
+// semantics: function declaration, put into header
+#define CPPJIT_DECLARE_KERNEL(kernel_return_type, kernel_name,                 \
+                              kernel_braced_parameter_list)                    \
+  namespace cppjit {                                                           \
+  namespace kernels {                                                          \
+  extern kernel_return_type(*kernel_name) kernel_braced_parameter_list;        \
+  }                                                                            \
+  }                                                                            \
+  kernel_return_type kernel_name kernel_braced_parameter_list;
+
+// // semantics: like a function call, has to be called before kernel is called
+// #define CPPJIT_REGISTER_KERNEL_SOURCE(kernel_name, kernel_source)       \
+//   {                                                                     \
+//    std::string kernel_src_string(#kernel_source);                       \
+//    cppjit::detail::register_kernel(kernel_name, kernel_src_string);     \
+//    std::cout << kernel_src_string;                                      \
+//    }                                                                    \
+
+
+// TODO: check expansion!
+#define CPPJIT_DEFINE_KERNEL(kernel_return_type, kernel_name,                  \
+                             kernel_braced_parameter_list, argument_list)      \
+  namespace cppjit {                                                           \
+  namespace kernels {                                                          \
+  kernel_return_type(*kernel_name) kernel_braced_parameter_list = nullptr;     \
+  }                                                                            \
+  }                                                                            \
+  \  
+  kernel_return_type kernel_name kernel_braced_parameter_list {                \
+    if (cppjit::kernels::##kernel_name == nullptr) {                           \
+      void *uncasted_function = cppjit::load_kernel(#kernel_name);             \
+      *(void **)(&cppjit::kernels::##kernel_name) = uncasted_function;         \
+    }                                                                          \
+    cppjit::kernels::kernel_my_inline_kernel_impl##argument_list;            \
+  }
