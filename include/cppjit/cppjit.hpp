@@ -102,11 +102,6 @@ void finalize() {
     std::cout << kernel_src_string << std::endl;                               \
   }
 
-template <type T>
-void f(T t){
-
-};
-
 // TODO: check expansion!
 #define CPPJIT_DEFINE_KERNEL(kernel_return_type, kernel_name,                  \
                              kernel_braced_parameter_list, argument_list)      \
