@@ -44,7 +44,7 @@ void compile_inline_kernel(std::string kernel_inline_source,
   std::ofstream kernel_file(kernels_tmp_dir + "src/" + kernel_name + ".cpp");
   kernel_file << kernel_inline_source;
   kernel_file.close();
-  compile_kernel(kernels_tmp_dir + "/src/", kernel_name);
+  compile_kernel(kernels_tmp_dir + "src/", kernel_name);
 }
 }
 
@@ -61,7 +61,7 @@ void *load_kernel(std::string kernel_name) {
   dlerror(); /* Clear any existing error */
 
   // *(void **)(&kernel_impl) = dlsym(kernel_library, "kernel_impl");
-  void *uncasted_function = dlsym(kernel_library, "kernel_impl");
+  void *uncasted_function = dlsym(kernel_library, kernel_name.c_str());
   // detail::kernel_symbol_map[kernel_name] = uncasted_function;
 
   char *error = dlerror();
@@ -94,14 +94,13 @@ void finalize() {
   }                                                                            \
   kernel_return_type kernel_name kernel_braced_parameter_list;
 
-// // semantics: like a function call, has to be called before kernel is called
-// #define CPPJIT_REGISTER_KERNEL_SOURCE(kernel_name, kernel_source)       \
-//   {                                                                     \
-//    std::string kernel_src_string(#kernel_source);                       \
-//    cppjit::detail::register_kernel(kernel_name, kernel_src_string);     \
-//    std::cout << kernel_src_string;                                      \
-//    }                                                                    \
-
+// semantics: like a function call, has to be called before kernel is called
+#define CPPJIT_REGISTER_KERNEL_SOURCE(kernel_name, kernel_source)              \
+  {                                                                            \
+    std::string kernel_src_string(kernel_source);                              \
+    cppjit::detail::register_kernel(kernel_name, kernel_src_string);           \
+    std::cout << kernel_src_string << std::endl;                               \
+  }
 
 // TODO: check expansion!
 #define CPPJIT_DEFINE_KERNEL(kernel_return_type, kernel_name,                  \
@@ -111,11 +110,12 @@ void finalize() {
   kernel_return_type(*kernel_name) kernel_braced_parameter_list = nullptr;     \
   }                                                                            \
   }                                                                            \
-  \  
   kernel_return_type kernel_name kernel_braced_parameter_list {                \
-    if (cppjit::kernels::##kernel_name == nullptr) {                           \
+    if (cppjit::kernels::kernel_name == nullptr) {                             \
+      cppjit::detail::compile_inline_kernel(                                   \
+          cppjit::detail::kernel_source_map[#kernel_name], #kernel_name);      \
       void *uncasted_function = cppjit::load_kernel(#kernel_name);             \
-      *(void **)(&cppjit::kernels::##kernel_name) = uncasted_function;         \
+      *(void **)(&cppjit::kernels::kernel_name) = uncasted_function;           \
     }                                                                          \
-    cppjit::kernels::kernel_my_inline_kernel_impl##argument_list;            \
+    cppjit::kernels::kernel_name argument_list;                                \
   }
