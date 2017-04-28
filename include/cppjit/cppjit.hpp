@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <functional>
 #include <map>
 #include <vector>
 
@@ -84,7 +85,32 @@ void finalize() {
 }
 }
 
+//
+
 // semantics: function declaration, put into header
+#define CPPJIT_DECLARE_KERNEL_NEW(kernel_signature, kernel_name)               \
+  namespace cppjit {                                                           \
+  namespace kernels {                                                          \
+  extern std::function<kernel_signature> kernel_name;                          \
+  }                                                                            \
+  }                                                                            \
+  template <typename ret, typename... Ts> ret kernel_name(Ts... args) {        \
+    if (!cppjit::kernels::kernel_name) {                                       \
+      std::cout << "help! not initialized" << std::endl;                       \
+      cppjit::detail::compile_inline_kernel(                                   \
+          cppjit::detail::kernel_source_map[#kernel_name], #kernel_name);      \
+      void *uncasted_function = cppjit::load_kernel(#kernel_name);             \
+      ret (*fp)(Ts...) = reinterpret_cast<decltype(fp)>(uncasted_function);    \
+      cppjit::kernels::kernel_name = fp;                                       \
+    }                                                                          \
+    return cppjit::kernels::kernel_name(std::forward<Ts>(args)...);            \
+  }
+
+// *(void **)(&cppjit::kernels::kernel_name) = uncasted_function;
+// cppjit::kernels::kernel_name =                                           \
+      //     static_cast<decltype(cppjit::kernels::kernel_name)>(                 \
+      //         uncasted_function);                                              \
+
 #define CPPJIT_DECLARE_KERNEL(kernel_return_type, kernel_name,                 \
                               kernel_braced_parameter_list)                    \
   namespace cppjit {                                                           \
@@ -102,7 +128,6 @@ void finalize() {
     std::cout << kernel_src_string << std::endl;                               \
   }
 
-// TODO: check expansion!
 #define CPPJIT_DEFINE_KERNEL(kernel_return_type, kernel_name,                  \
                              kernel_braced_parameter_list, argument_list)      \
   namespace cppjit {                                                           \
@@ -118,4 +143,11 @@ void finalize() {
       *(void **)(&cppjit::kernels::kernel_name) = uncasted_function;           \
     }                                                                          \
     cppjit::kernels::kernel_name argument_list;                                \
+  }
+
+#define CPPJIT_DEFINE_KERNEL_NEW(kernel_signature, kernel_name)                \
+  namespace cppjit {                                                           \
+  namespace kernels {                                                          \
+  std::function<kernel_signature> kernel_name;                                 \
+  }                                                                            \
   }
