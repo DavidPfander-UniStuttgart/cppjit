@@ -5,22 +5,21 @@
 #include "cppjit/cppjit.hpp"
 #include "example_kernels/kernel_inline.hpp"
 
+// declares kernel, set_source and load function
 CPPJIT_DECLARE_KERNEL(int(int), test_kernel)
 
 int main(void) {
 
   cppjit::init();
 
-  std::cout << "bla" << std::endl;
-
-  cppjit::register_kernel(
-      "test_kernel",
+  set_source_test_kernel(
       "#include <iostream> \n extern \"C\" int "
       "test_kernel(int input) { std::cout << \"test "
       "test kernel hallo: \" << input << std::endl; return input;}");
 
+  std::cout << "doing explicit load" << std::endl;
   load_test_kernel();
-  
+
   std::cout << "before kernel call" << std::endl;
   int result = test_kernel(8);
 
