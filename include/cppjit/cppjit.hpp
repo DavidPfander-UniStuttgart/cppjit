@@ -7,6 +7,8 @@
 
 #include <dlfcn.h>
 
+#include "function_traits.hpp"
+
 namespace cppjit {
 
 namespace detail {
@@ -14,10 +16,6 @@ std::string kernels_tmp_dir("./kernels_tmp/");
 std::vector<void *> opened_kernel_libraries;
 // std::map<std::string, void *> kernel_symbol_map;
 std::map<std::string, std::string> kernel_source_map;
-
-void register_kernel(std::string kernel_name, std::string kernel_source) {
-  kernel_source_map[kernel_name] = kernel_source;
-}
 
 void compile_kernel(std::string kernel_source_dir, std::string kernel_name) {
   std::string source_file(kernel_source_dir + kernel_name + ".cpp");
@@ -47,6 +45,10 @@ void compile_inline_kernel(std::string kernel_inline_source,
   kernel_file.close();
   compile_kernel(kernels_tmp_dir + "src/", kernel_name);
 }
+}
+
+void register_kernel(std::string kernel_name, std::string kernel_source) {
+  detail::kernel_source_map[kernel_name] = kernel_source;
 }
 
 void *load_kernel(std::string kernel_name) {
@@ -85,62 +87,50 @@ void finalize() {
 }
 }
 
-//
-
-// semantics: function declaration, put into header
-#define CPPJIT_DECLARE_KERNEL_NEW(kernel_signature, kernel_name)               \
+#define CPPJIT_DECLARE_KERNEL(kernel_signature, kernel_name)                   \
   namespace cppjit {                                                           \
   namespace kernels {                                                          \
-  extern std::function<kernel_signature> kernel_name;                          \
+  extern std::function<int(int)> kernel_name;                                  \
   }                                                                            \
-  }                                                                            \
-  template <typename ret, typename... Ts> ret kernel_name(Ts... args) {        \
-    if (!cppjit::kernels::kernel_name) {                                       \
+  namespace loader {                                                           \
+  template <typename... Args> struct kernel_name;                              \
+  template <typename R, typename... Args>                                      \
+  struct kernel_name<R, cppjit::detail::pack<Args...>> {                       \
+    void operator()() {                                                        \
       std::cout << "help! not initialized" << std::endl;                       \
       cppjit::detail::compile_inline_kernel(                                   \
           cppjit::detail::kernel_source_map[#kernel_name], #kernel_name);      \
       void *uncasted_function = cppjit::load_kernel(#kernel_name);             \
-      ret (*fp)(Ts...) = reinterpret_cast<decltype(fp)>(uncasted_function);    \
+      R (*fp)(Args...) = reinterpret_cast<decltype(fp)>(uncasted_function);    \
       cppjit::kernels::kernel_name = fp;                                       \
     }                                                                          \
-    return cppjit::kernels::kernel_name(std::forward<Ts>(args)...);            \
-  }
-
-#define CPPJIT_DECLARE_KERNEL(kernel_return_type, kernel_name,                 \
-                              kernel_braced_parameter_list)                    \
+  };                                                                           \
+  }                                                                            \
+  }                                                                            \
+  cppjit::loader::kernel_name<                                                 \
+      cppjit::detail::function_pointer_traits<kernel_signature>::return_type,  \
+      cppjit::detail::function_pointer_traits<kernel_signature>::args_type>    \
+      load_##kernel_name;                                                      \
   namespace cppjit {                                                           \
-  namespace kernels {                                                          \
-  extern kernel_return_type(*kernel_name) kernel_braced_parameter_list;        \
-  }                                                                            \
-  }                                                                            \
-  kernel_return_type kernel_name kernel_braced_parameter_list;
-
-// semantics: like a function call, has to be called before kernel is called
-#define CPPJIT_REGISTER_KERNEL_SOURCE(kernel_name, kernel_source)              \
-  {                                                                            \
-    std::string kernel_src_string(kernel_source);                              \
-    cppjit::detail::register_kernel(kernel_name, kernel_src_string);           \
-    std::cout << kernel_src_string << std::endl;                               \
-  }
-
-#define CPPJIT_DEFINE_KERNEL(kernel_return_type, kernel_name,                  \
-                             kernel_braced_parameter_list, argument_list)      \
-  namespace cppjit {                                                           \
-  namespace kernels {                                                          \
-  kernel_return_type(*kernel_name) kernel_braced_parameter_list = nullptr;     \
-  }                                                                            \
-  }                                                                            \
-  kernel_return_type kernel_name kernel_braced_parameter_list {                \
-    if (cppjit::kernels::kernel_name == nullptr) {                             \
-      cppjit::detail::compile_inline_kernel(                                   \
-          cppjit::detail::kernel_source_map[#kernel_name], #kernel_name);      \
-      void *uncasted_function = cppjit::load_kernel(#kernel_name);             \
-      *(void **)(&cppjit::kernels::kernel_name) = uncasted_function;           \
+  namespace wrapper {                                                          \
+  template <typename... Args> struct kernel_name;                              \
+  template <typename R, typename... Args>                                      \
+  struct kernel_name<R, cppjit::detail::pack<Args...>> {                       \
+    R operator()(Args... args) {                                               \
+      if (!cppjit::kernels::kernel_name) {                                     \
+        load_##kernel_name();                                                  \
+      }                                                                        \
+      return cppjit::kernels::kernel_name(std::forward<Args>(args)...);        \
     }                                                                          \
-    cppjit::kernels::kernel_name argument_list;                                \
-  }
+  };                                                                           \
+  }                                                                            \
+  }                                                                            \
+  cppjit::wrapper::kernel_name<                                                \
+      cppjit::detail::function_pointer_traits<kernel_signature>::return_type,  \
+      cppjit::detail::function_pointer_traits<kernel_signature>::args_type>    \
+      kernel_name;
 
-#define CPPJIT_DEFINE_KERNEL_NEW(kernel_signature, kernel_name)                \
+#define CPPJIT_DEFINE_KERNEL(kernel_signature, kernel_name)                    \
   namespace cppjit {                                                           \
   namespace kernels {                                                          \
   std::function<kernel_signature> kernel_name;                                 \
