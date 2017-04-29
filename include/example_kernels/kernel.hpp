@@ -16,7 +16,7 @@ void (*kernel_impl)();
 
 void load_kernel_impl() {
   std::cout << "kernel called for first time, loading kernel..." << std::endl;
-    void *uncasted_function = cppjit::load_kernel("kernel_impl");
+  void *uncasted_function = cppjit::detail::load_kernel("kernel_impl");
   *(void **)(&kernel_impl) = uncasted_function;
   
 }

@@ -45,11 +45,6 @@ void compile_inline_kernel(std::string kernel_inline_source,
   kernel_file.close();
   compile_kernel(kernels_tmp_dir + "src/", kernel_name);
 }
-}
-
-void register_kernel(std::string kernel_name, std::string kernel_source) {
-  detail::kernel_source_map[kernel_name] = kernel_source;
-}
 
 void *load_kernel(std::string kernel_name) {
   std::string library_file(detail::kernels_tmp_dir + "lib" + kernel_name +
@@ -76,6 +71,11 @@ void *load_kernel(std::string kernel_name) {
   cppjit::detail::opened_kernel_libraries.push_back(kernel_library);
   return uncasted_function;
 }
+}
+
+void register_kernel(std::string kernel_name, std::string kernel_source) {
+  detail::kernel_source_map[kernel_name] = kernel_source;
+}
 
 void init() {}
 
@@ -100,7 +100,7 @@ void finalize() {
       std::cout << "help! not initialized" << std::endl;                       \
       cppjit::detail::compile_inline_kernel(                                   \
           cppjit::detail::kernel_source_map[#kernel_name], #kernel_name);      \
-      void *uncasted_function = cppjit::load_kernel(#kernel_name);             \
+      void *uncasted_function = cppjit::detail::load_kernel(#kernel_name);     \
       R (*fp)(Args...) = reinterpret_cast<decltype(fp)>(uncasted_function);    \
       cppjit::kernels::kernel_name = fp;                                       \
     }                                                                          \

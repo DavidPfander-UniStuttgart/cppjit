@@ -21,7 +21,7 @@ void my_kernel_inline() {
     // cppjit::detail::compile_inline_kernel(my_kernel_inline_source,
     //                                   "my_inline_kernel");
     std::cout << "kernel called for first time, loading kernel..." << std::endl;
-    void *uncasted_function = cppjit::load_kernel("my_inline_kernel");
+    void *uncasted_function = cppjit::detail::load_kernel("my_inline_kernel");
     *(void **)(&cppjit::kernels::kernel_my_inline_kernel_impl) =
         uncasted_function;
   }
