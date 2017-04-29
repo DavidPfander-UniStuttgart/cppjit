@@ -19,11 +19,14 @@ set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -Wextra -march=native -mtune=native ${CMAK
 
 #However, the file(GLOB...) allows for wildcard additions:
 file(GLOB SOURCES_EXAMPLE "src/example.cpp")
-
 add_executable(example ${SOURCES_EXAMPLE})
 target_link_libraries(example dl)
 
 file(GLOB SOURCES_EXAMPLE_INLINE "src/example_inline.cpp")
 add_executable(example_inline ${SOURCES_EXAMPLE_INLINE})
 target_link_libraries(example_inline dl)
+
+file(GLOB SOURCES_EXAMPLE_FUNCTIONAL "src/example_functional.cpp")
+add_executable(example_functional ${SOURCES_EXAMPLE_FUNCTIONAL})
+target_link_libraries(example_functional dl)
 # INSTALL_TARGETS(/bin example)

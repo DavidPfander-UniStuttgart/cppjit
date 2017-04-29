@@ -106,11 +106,6 @@ void finalize() {
     return cppjit::kernels::kernel_name(std::forward<Ts>(args)...);            \
   }
 
-// *(void **)(&cppjit::kernels::kernel_name) = uncasted_function;
-// cppjit::kernels::kernel_name =                                           \
-      //     static_cast<decltype(cppjit::kernels::kernel_name)>(                 \
-      //         uncasted_function);                                              \
-
 #define CPPJIT_DECLARE_KERNEL(kernel_return_type, kernel_name,                 \
                               kernel_braced_parameter_list)                    \
   namespace cppjit {                                                           \

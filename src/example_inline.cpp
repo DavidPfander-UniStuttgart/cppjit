@@ -17,7 +17,8 @@ CPPJIT_DECLARE_KERNEL_NEW(int(int), test_kernel)
 //     void *uncasted_function = cppjit::load_kernel("test_kernel");
 //     ret (*fp)(Ts...) = reinterpret_cast<decltype(fp)>(uncasted_function);
 //     cppjit::kernels::test_kernel = fp;
-//     // std::function<int(int)> f = reinterpret_cast<int*(int)*>(uncasted_function);
+//     // std::function<int(int)> f =
+//     reinterpret_cast<int*(int)*>(uncasted_function);
 //   }
 //   return cppjit::kernels::test_kernel(std::forward<Ts>(args)...);
 // }
@@ -69,12 +70,15 @@ int main(void) {
 
   std::cout << "bla" << std::endl;
 
-  CPPJIT_REGISTER_KERNEL_SOURCE("test_kernel",
-                                "#include <iostream> \n extern \"C\" void "
-                                "test_kernel(int input) { std::cout << \"test "
-                                "test kernel hallo: \" << input << std::endl;}");
+  CPPJIT_REGISTER_KERNEL_SOURCE(
+      "test_kernel",
+      "#include <iostream> \n extern \"C\" int "
+      "test_kernel(int input) { std::cout << \"test "
+      "test kernel hallo: \" << input << std::endl; return input;}");
 
-  test_kernel<int>(8);
+  int result = test_kernel<int>(8);
+
+  std::cout << "result: " << result << std::endl;
 
   // //     std::string my_kernel_inline_source(
   // //         "#include <iostream>\n"
