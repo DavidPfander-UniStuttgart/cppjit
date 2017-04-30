@@ -30,3 +30,8 @@ file(GLOB SOURCES_EXAMPLE_FUNCTIONAL "src/example_functional.cpp")
 add_executable(example_functional ${SOURCES_EXAMPLE_FUNCTIONAL})
 target_link_libraries(example_functional dl)
 # INSTALL_TARGETS(/bin example)
+
+file(GLOB SOURCES_TEST "test/test_cppjit.cpp")
+add_executable(test_cppjit ${SOURCES_TEST})
+target_link_libraries(test_cppjit dl)
+# INSTALL_TARGETS(/bin example)

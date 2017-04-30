@@ -16,25 +16,25 @@ int main(void) {
 
   std::cout
       << typeid(
-             cppjit::detail::function_pointer_traits<decltype(f)>::return_type)
+             cppjit::detail::function_traits<decltype(f)>::return_type)
              .name()
       << std::endl;
 
   std::cout << "return_type: "
-            << typeid(cppjit::detail::function_pointer_traits<decltype(
+            << typeid(cppjit::detail::function_traits<decltype(
                           f_functional)>::return_type)
                    .name()
             << std::endl;
   std::cout
       << "arity:"
-      << cppjit::detail::function_pointer_traits<decltype(f_functional)>::arity
+      << cppjit::detail::function_traits<decltype(f_functional)>::arity
       << std::endl;
   std::cout
       << "arity:"
-      << cppjit::detail::function_pointer_traits<decltype(f_functional2)>::arity
+      << cppjit::detail::function_traits<decltype(f_functional2)>::arity
       << std::endl;
   std::cout << "second arg type:"
-            << typeid(cppjit::detail::function_pointer_traits<decltype(
+            << typeid(cppjit::detail::function_traits<decltype(
                           f_functional2)>::arg_type<1>)
                    .name()
             << std::endl;

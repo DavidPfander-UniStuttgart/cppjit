@@ -1,5 +1,9 @@
 #pragma once
 
+#include <cstddef>
+#include <functional>
+#include <tuple>
+
 namespace cppjit {
 namespace detail {
 
@@ -8,12 +12,12 @@ namespace detail {
 template <class... Args> struct pack;
 
 // forward declaration for following specialization
-template <class F> struct function_pointer_traits;
+template <class F> struct function_traits;
 
 // using specialization to match for function-type -> use this overload for
 // function type
 // this overload works for function pointers
-template <class R, class... Args> struct function_pointer_traits<R(Args...)> {
+template <class R, class... Args> struct function_traits<R(Args...)> {
 
   // expands to return type
   using return_type = R;
@@ -33,8 +37,12 @@ template <class R, class... Args> struct function_pointer_traits<R(Args...)> {
 // overload for std::function -> works by unpacking inner type of std::function
 // can reuse above type evaluation through inheritance
 template <class R, class... Args>
-struct function_pointer_traits<std::function<R(Args...)>>
-    : public function_pointer_traits<R(Args...)> {};
+struct function_traits<std::function<R(Args...)>>
+    : public function_traits<R(Args...)> {};
+
+// overload for functino pointer, same idea as for std::function
+template <class R, class... Args>
+struct function_traits<R (*)(Args...)> : public function_traits<R(Args...)> {};
 
 } // namespace detail
 } // namespace cppjit

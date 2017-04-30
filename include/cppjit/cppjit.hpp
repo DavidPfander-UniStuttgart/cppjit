@@ -86,7 +86,7 @@ void finalize() {
 #define CPPJIT_DECLARE_KERNEL(kernel_signature, kernel_name)                   \
   namespace cppjit {                                                           \
   namespace kernels {                                                          \
-  extern std::function<int(int)> kernel_name;                                  \
+  extern std::function<kernel_signature> kernel_name;                          \
   }                                                                            \
   namespace source {                                                           \
   extern std::string kernel_name;                                              \
@@ -107,8 +107,8 @@ void finalize() {
   }                                                                            \
   }                                                                            \
   cppjit::loader::kernel_name<                                                 \
-      cppjit::detail::function_pointer_traits<kernel_signature>::return_type,  \
-      cppjit::detail::function_pointer_traits<kernel_signature>::args_type>    \
+      cppjit::detail::function_traits<kernel_signature>::return_type,          \
+      cppjit::detail::function_traits<kernel_signature>::args_type>            \
       load_##kernel_name;                                                      \
   namespace cppjit {                                                           \
   namespace wrapper {                                                          \
@@ -125,12 +125,18 @@ void finalize() {
   }                                                                            \
   }                                                                            \
   cppjit::wrapper::kernel_name<                                                \
-      cppjit::detail::function_pointer_traits<kernel_signature>::return_type,  \
-      cppjit::detail::function_pointer_traits<kernel_signature>::args_type>    \
+      cppjit::detail::function_traits<kernel_signature>::return_type,          \
+      cppjit::detail::function_traits<kernel_signature>::args_type>            \
       kernel_name;                                                             \
   void set_source_##kernel_name(std::string source) {                          \
     cppjit::kernels::kernel_name = nullptr;                                    \
     cppjit::source::kernel_name = source;                                      \
+  }                                                                            \
+  bool is_loaded_##kernel_name() {                                             \
+    if (cppjit::kernels::kernel_name) {                                        \
+      return true;                                                             \
+    }                                                                          \
+    return false;                                                              \
   }
 
 #define CPPJIT_DEFINE_KERNEL(kernel_signature, kernel_name)                    \
