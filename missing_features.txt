@@ -4,13 +4,13 @@ Essential:
 - add cmake support for kernels (for arbitrarily complex kernels and other compilers)
 
 Important:
-- support declar macro that support placement in specific namespace
-- support for c++ symbols
-- support for multi-symbol libraries
-- examples
-- add meaningful error messages
+- support declare macro that support placement in specific namespace
+- support for c++ symbols- CHECK
+- support for multi-symbol libraries - CHECK, via loading a class
+- examples - IN PROGRESS
+- add meaningful error messages - CHECK
 - github description
 
 Nice:
-- tests
-- loading objects? (waiting for usecase)
+- tests - IN PROGRESS
+- loading objects? (waiting for usecase) - CHECK

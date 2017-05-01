@@ -4,19 +4,20 @@
 #include <functional>
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <vector>
 
 #include <dlfcn.h>
 
+#include "cppjit_exception.hpp"
 #include "function_traits.hpp"
 
 namespace cppjit {
 
 namespace detail {
-std::string kernels_tmp_dir("./kernels_tmp/");
+std::string kernels_tmp_dir("./cppjit_tmp/");
 std::vector<void *> opened_kernel_libraries;
-// std::map<std::string, void *> kernel_symbol_map;
-std::map<std::string, std::string> kernel_source_map;
+bool verbose = false;
 
 void compile_kernel(std::string kernel_source_dir, std::string kernel_name) {
   std::string source_file(kernel_source_dir + kernel_name + ".cpp");
@@ -25,51 +26,56 @@ void compile_kernel(std::string kernel_source_dir, std::string kernel_name) {
   std::string compile_cmd("g++ -o " + object_file + " -c -std=c++14 -fPIC " +
                           source_file + " > " + kernel_name +
                           "_compile.log 2>&1");
-  std::cout << "compile_cmd: " << compile_cmd << std::endl;
+  if (verbose) {
+    std::cout << "compile_cmd: " << compile_cmd << std::endl;
+  }
   int return_value = std::system(compile_cmd.c_str());
   if (return_value != 0) {
-    std::cerr << "error: compile of kernel failed" << std::endl;
+    throw cppjit_exception("error: compilation of kernel failed");
   }
   std::string link_cmd("g++ -shared -o " + library_file + " " + object_file +
                        " > " + kernel_name + "_link.log 2>&1");
-  std::cout << "link_cmd: " << link_cmd << std::endl;
+  if (verbose) {
+    std::cout << "link_cmd: " << link_cmd << std::endl;
+  }
   return_value = std::system(link_cmd.c_str());
   if (return_value != 0) {
-    std::cerr << "error: compile of kernel failed" << std::endl;
+    throw cppjit_exception("error: compile of kernel failed");
   }
 }
 
 void compile_inline_kernel(std::string kernel_inline_source,
                            std::string kernel_name) {
-  std::ofstream kernel_file(kernels_tmp_dir + "src/" + kernel_name + ".cpp");
+  std::ofstream kernel_file(kernels_tmp_dir + kernel_name + ".cpp");
   kernel_file << kernel_inline_source;
   kernel_file.close();
-  compile_kernel(kernels_tmp_dir + "src/", kernel_name);
+  compile_kernel(kernels_tmp_dir, kernel_name);
 }
 
 void *load_kernel(std::string kernel_name) {
   std::string library_file(detail::kernels_tmp_dir + "lib" + kernel_name +
                            ".so");
-  void *kernel_library = dlopen(library_file.c_str(), RTLD_LAZY);
 
-  if (!kernel_library) {
-    std::cerr << "error: could not open kernel shared library file, reason:"
-              << std::endl;
-    fprintf(stderr, "%s\n", dlerror());
-    exit(EXIT_FAILURE);
+  dlerror(); // clear any prior error
+  void *kernel_library = dlopen(library_file.c_str(), RTLD_LAZY);
+  char *error = dlerror();
+
+  if (error != nullptr) {
+    std::stringstream s;
+    s << "error: could not open kernel shared library file, reason: ";
+    s << dlerror();
+    throw cppjit_exception(s.str());
   }
 
-  dlerror(); /* Clear any existing error */
-
-  // *(void **)(&kernel_impl) = dlsym(kernel_library, "kernel_impl");
+  dlerror(); // clear any prior error
   void *uncasted_function = dlsym(kernel_library, kernel_name.c_str());
-  // detail::kernel_symbol_map[kernel_name] = uncasted_function;
+  error = dlerror();
 
-  char *error = dlerror();
   if (error != nullptr) {
-    std::cerr << "error: could not find kernel symbol, reason:" << std::endl;
-    fprintf(stderr, "%s\n", error);
-    exit(EXIT_FAILURE);
+    std::stringstream s;
+    s << "error: could not find kernel symbol, reason: ";
+    s << error;
+    throw cppjit_exception(s.str());
   }
 
   cppjit::detail::opened_kernel_libraries.push_back(kernel_library);
@@ -77,7 +83,7 @@ void *load_kernel(std::string kernel_name) {
 }
 }
 
-void init() {}
+void set_verbose(bool verbose) { cppjit::detail::verbose = verbose; }
 
 void finalize() {
   for (void *kernel_library : detail::opened_kernel_libraries) {
@@ -100,7 +106,10 @@ void finalize() {
   template <typename R, typename... Args>                                      \
   struct kernel_name<R, cppjit::detail::pack<Args...>> {                       \
     void operator()() {                                                        \
-      std::cout << "help! not initialized" << std::endl;                       \
+      if (cppjit::detail::verbose) {                                           \
+        std::cout << "kernel \"" << #kernel_name                               \
+                  << "\" not initialized: initializing..." << std::endl;       \
+      }                                                                        \
       cppjit::detail::compile_inline_kernel(cppjit::source::kernel_name,       \
                                             #kernel_name);                     \
       void *uncasted_function = cppjit::detail::load_kernel(#kernel_name);     \
