@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <functional>
+#include <iostream>
 #include <map>
 #include <vector>
 
@@ -52,6 +53,8 @@ void *load_kernel(std::string kernel_name) {
   void *kernel_library = dlopen(library_file.c_str(), RTLD_LAZY);
 
   if (!kernel_library) {
+    std::cerr << "error: could not open kernel shared library file, reason:"
+              << std::endl;
     fprintf(stderr, "%s\n", dlerror());
     exit(EXIT_FAILURE);
   }
@@ -64,6 +67,7 @@ void *load_kernel(std::string kernel_name) {
 
   char *error = dlerror();
   if (error != nullptr) {
+    std::cerr << "error: could not find kernel symbol, reason:" << std::endl;
     fprintf(stderr, "%s\n", error);
     exit(EXIT_FAILURE);
   }

@@ -5,7 +5,7 @@
 #include "cppjit/cppjit.hpp"
 #include "example_kernels/kernel_inline.hpp"
 
-// declares kernel, set_source and load function
+// declares kernel
 CPPJIT_DECLARE_KERNEL(int(int), test_kernel)
 
 int main(void) {
