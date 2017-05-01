@@ -18,19 +18,19 @@ include_directories(include)
 set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -Wextra -march=native -mtune=native ${CMAKE_CXX_FLAGS}")
 
 #However, the file(GLOB...) allows for wildcard additions:
-file(GLOB SOURCES_EXAMPLE "src/example.cpp")
+file(GLOB SOURCES_EXAMPLE "examples/example.cpp")
 add_executable(example ${SOURCES_EXAMPLE})
 target_link_libraries(example dl)
 
-file(GLOB SOURCES_EXAMPLE_INLINE "src/example_inline_with_explicit_load.cpp")
+file(GLOB SOURCES_EXAMPLE_INLINE "examples/example_inline_with_explicit_load.cpp")
 add_executable(example_inline_with_explicit_load ${SOURCES_EXAMPLE_INLINE})
 target_link_libraries(example_inline_with_explicit_load dl)
 
-file(GLOB SOURCES_EXAMPLE_FUNCTIONAL "src/example_functional.cpp")
+file(GLOB SOURCES_EXAMPLE_FUNCTIONAL "examples/example_functional.cpp")
 add_executable(example_functional ${SOURCES_EXAMPLE_FUNCTIONAL})
 target_link_libraries(example_functional dl)
 
-file(GLOB SOURCES_EXAMPLE_CLASS "src/example_class/example_class.cpp")
+file(GLOB SOURCES_EXAMPLE_CLASS "examples/example_class/example_class.cpp")
 add_executable(example_class ${SOURCES_EXAMPLE_CLASS})
 target_link_libraries(example_class dl)
 

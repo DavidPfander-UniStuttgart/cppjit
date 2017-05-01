@@ -6,8 +6,11 @@
 CPPJIT_DECLARE_KERNEL(my_class_interface *(), my_class_factory_method)
 
 int main(void) {
+
+  cppjit::set_verbose(true);
+  
   set_source_my_class_factory_method(
-      "#include \"../../src/example_class/my_class.hpp\" \n extern \"C\" my_class_interface* "
+      "#include \"../examples/example_class/my_class.hpp\" \n extern \"C\" my_class_interface* "
       "my_class_factory_method() { return new my_class(); }");
 
   my_class_interface *instance = my_class_factory_method();
