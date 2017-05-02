@@ -284,6 +284,7 @@ void test_call_kernels() {
 }
 
 int main(void) {
+  cppjit::set_verbose(true);
   std::cout << "info: test exits with an error message if any error occurs"
             << std::endl;
   test_function_traits::test_function_traits();

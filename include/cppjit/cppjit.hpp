@@ -19,6 +19,20 @@ std::string kernels_tmp_dir("./cppjit_tmp/");
 std::vector<void *> opened_kernel_libraries;
 bool verbose = false;
 
+void read_and_print_log(std::string file_name) {
+  std::ifstream f;
+  f.open(file_name);
+  if (!f.is_open()) {
+    std::cerr << "could not read log file";
+    return;
+  }
+  std::string line;
+  while (std::getline(f, line)) {
+    std::cerr << line << std::endl;
+  }
+  f.close();
+}
+
 void compile_kernel(std::string kernel_source_dir, std::string kernel_name) {
   std::string source_file(kernel_source_dir + kernel_name + ".cpp");
   std::string object_file(kernels_tmp_dir + kernel_name + ".o");
@@ -31,6 +45,10 @@ void compile_kernel(std::string kernel_source_dir, std::string kernel_name) {
   }
   int return_value = std::system(compile_cmd.c_str());
   if (return_value != 0) {
+    if (verbose) {
+      std::cerr << "compile log:" << std::endl;
+      read_and_print_log(kernel_name + "_compile.log");
+    }
     throw cppjit_exception("error: compilation of kernel failed");
   }
   std::string link_cmd("g++ -shared -o " + library_file + " " + object_file +
@@ -40,6 +58,10 @@ void compile_kernel(std::string kernel_source_dir, std::string kernel_name) {
   }
   return_value = std::system(link_cmd.c_str());
   if (return_value != 0) {
+    if (verbose) {
+      std::cerr << "link log:" << std::endl;
+      read_and_print_log(kernel_name + "_link.log");
+    }
     throw cppjit_exception("error: compile of kernel failed");
   }
 }
