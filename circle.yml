@@ -9,7 +9,7 @@ dependencies:
 compile:
     override:
         - ls
-        - cd cppjit && mkdir build && cmake ../ && make -j4 VERBOSE=1
+        - mkdir build && cd build && cmake ../ && make -j4 VERBOSE=1
 test:
     override:
-        - cd cppjit && ./build/test_cppjit
+        - ./build/test_cppjit
