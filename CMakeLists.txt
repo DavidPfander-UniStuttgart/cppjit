@@ -18,9 +18,9 @@ include_directories(include)
 set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -Wextra -march=native -mtune=native ${CMAKE_CXX_FLAGS}")
 
 #However, the file(GLOB...) allows for wildcard additions:
-file(GLOB SOURCES_EXAMPLE "examples/example.cpp")
-add_executable(example ${SOURCES_EXAMPLE})
-target_link_libraries(example dl)
+file(GLOB SOURCES_HELLO_WORLD_JIT "examples/hello_world_jit.cpp")
+add_executable(hello_world_jit ${SOURCES_HELLO_WORLD_JIT})
+target_link_libraries(hello_world_jit dl)
 
 file(GLOB SOURCES_EXAMPLE_INLINE "examples/example_inline_with_explicit_load.cpp")
 add_executable(example_inline_with_explicit_load ${SOURCES_EXAMPLE_INLINE})
