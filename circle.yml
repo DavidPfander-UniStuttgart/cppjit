@@ -8,7 +8,7 @@ dependencies:
         - sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-6 20
 compile:
     override:
-        - mkdir build && cmake ../ && make -j4 VERBOSE=1
+        - cd cppjit && mkdir build && cmake ../ && make -j4 VERBOSE=1
 test:
     override:
-        - ./build/test_cppjit
+        - cd cppjit && ./build/test_cppjit
