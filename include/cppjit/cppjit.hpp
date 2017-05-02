@@ -107,6 +107,36 @@ void *load_kernel(std::string kernel_name) {
 
 void set_verbose(bool verbose) { cppjit::detail::verbose = verbose; }
 
+void set_kernel_directory(std::string path, bool create_directory = false) {
+  if (path.size() == 0) {
+    throw cppjit_exception("specified temporary dir cannot be empty");
+  }
+  // create directory if set
+  if (create_directory) {
+    std::string create_dir_cmd("mkdir -p " + path);
+    int return_value = std::system(create_dir_cmd.c_str());
+    if (return_value != 0) {
+      throw cppjit_exception("could not create path: " + path);
+    }
+  }
+  // check whether path exists and is a directory
+  std::string dir_check_cmd("test -d " + path);
+  int return_value = std::system(dir_check_cmd.c_str());
+  if (return_value != 0) {
+    throw cppjit_exception("specified temporary path does not exist: " + path);
+  }
+
+  // normalize path
+  if (path[path.size() - 1] != '/') {
+    path = path + "/";
+  }
+  detail::kernels_tmp_dir = path;
+}
+
+const std::string &get_kernel_directory() {
+  return detail::kernels_tmp_dir;
+}
+
 void finalize() {
   for (void *kernel_library : detail::opened_kernel_libraries) {
     dlclose(kernel_library);

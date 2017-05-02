@@ -283,11 +283,34 @@ void test_call_kernels() {
 }
 }
 
+namespace test_helpers {
+
+void other_kernel_directory() {
+  std::string old_kernel_tmp_dir = cppjit::get_kernel_directory();
+  cppjit::set_kernel_directory("./kernels_tmp/cppjit_test_tmp_folder", true);
+
+  // reset source for void kernel to trigger (re)build
+  try {
+    set_source_void_kernel("extern \"C\" void "
+                           "void_kernel(void) {}");
+    void_kernel();
+  } catch (cppjit::cppjit_exception &e) {
+    std::cerr << "error: changing the kernel directory lead to non-functional "
+                 "kernel: "
+              << __FILE__ << " " << __LINE__ << std::endl;
+    exit(1);
+  }
+}
+
+void test_helpers() { other_kernel_directory(); }
+}
+
 int main(void) {
   cppjit::set_verbose(true);
   std::cout << "info: test exits with an error message if any error occurs"
             << std::endl;
   test_function_traits::test_function_traits();
   test_call_kernels::test_call_kernels();
+  test_helpers::test_helpers();
   std::cout << "no early exit, tests ran successfully" << std::endl;
 }
