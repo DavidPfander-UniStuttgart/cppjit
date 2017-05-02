@@ -8,10 +8,12 @@ CPPJIT_DECLARE_KERNEL(void(), kernel)
 
 int main(void) {
 
-  // optional: prints additional status messages to stdout
-  cppjit::set_verbose(true);
+  // cppjit::init();
+  
+  // // optional: prints additional status messages to stdout
+  // cppjit::set_verbose(true);
 
-  set_source_kernel(
+  compile_inline_kernel(
       "#include <iostream>\n extern \"C\" void "
       "kernel() { std::cout << \"hello jit world\" << std::endl;}");
 
@@ -19,7 +21,7 @@ int main(void) {
   kernel();
 
   // optional:: closes loaded libraries
-  cppjit::finalize();
+  // cppjit::finalize();
 
   return 0;
 }
