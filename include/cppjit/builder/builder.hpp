@@ -12,16 +12,25 @@ public:
   builder(const std::string &kernel_name, bool verbose = false)
       : kernel_name(kernel_name), verbose(verbose),
         compile_dir(DEFAULT_KERNEL_COMPILE_DIR),
-        source_dir(DEFAULT_KERNEL_COMPILE_DIR), kernel_library(nullptr) {}
+        // source_dir(DEFAULT_KERNEL_COMPILE_DIR),
+        kernel_library(nullptr) {}
 
-  virtual void *compile_kernel() = 0;
+  ~builder() {
+    if (kernel_library) {
+      dlclose(kernel_library);
+    }
+  }
+
+  virtual void *compile_kernel(const std::string &source_dir) = 0;
+
+  void *compile_kernel() { return compile_kernel(compile_dir); };
 
   void *compile_inline_kernel(std::string kernel_inline_source) {
-    source_dir = compile_dir;
+    // source_dir = compile_dir;
     std::ofstream kernel_file(compile_dir + kernel_name + ".cpp");
     kernel_file << kernel_inline_source;
     kernel_file.close();
-    return compile_kernel();
+    return compile_kernel(compile_dir);
   }
 
   void read_and_print_log(std::string path) {
@@ -98,25 +107,12 @@ public:
 
   const std::string &get_compile_dir() { return compile_dir; }
 
-  void set_source_dir(const std::string &source_dir) {
-    this->source_dir = source_dir;
-  }
-
-  const std::string &get_source_dir() { return source_dir; }
-
-protected:
-  void clear() {
-    if (kernel_library) {
-      dlclose(kernel_library);
-    }
-  }
-
 public:
   std::string kernel_name;
   bool verbose;
 
   std::string compile_dir;
-  std::string source_dir;
+  // std::string source_dir;
 
   void *kernel_library;
 };

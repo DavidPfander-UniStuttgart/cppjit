@@ -10,7 +10,7 @@ class GCC : public builder {
 public:
   GCC(const std::string &kernel_name) : builder(kernel_name) {}
 
-  void *compile_kernel() override {
+  void *compile_kernel(const std::string &source_dir) override {
     // std::string kernel_source_dir = kernel_compile_dir;
     std::string source_file(source_dir + kernel_name + ".cpp");
     std::string object_file(compile_dir + kernel_name + ".o");
