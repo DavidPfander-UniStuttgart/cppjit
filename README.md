@@ -5,7 +5,7 @@ cppjit is a simple, easy-to-use c++ just-in-time compiler (frontend)
 # Features
 
 * transparent interface, very easy to use:
-```
+```C++
 #include "cppjit/cppjit.hpp"
 
 // declares kernel, provide function type and a c-identifier as name
