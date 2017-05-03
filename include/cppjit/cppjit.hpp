@@ -8,8 +8,6 @@
 #include <sstream>
 #include <vector>
 
-#include <dlfcn.h>
-
 #include "builder/builder.hpp"
 #include "builder/gcc.hpp"
 #include "cppjit_exception.hpp"
@@ -30,7 +28,7 @@
     void operator()(const std::string &source) {                               \
       if (!cppjit::builder::kernel_name) {                                     \
         cppjit::builder::kernel_name =                                         \
-            std::make_shared<cppjit::builder::GCC>(#kernel_name);              \
+            std::make_shared<cppjit::builder::gcc>(#kernel_name);              \
       }                                                                        \
       if (cppjit::builder::kernel_name->is_verbose()) {                        \
         std::cout << "kernel \"" << #kernel_name                               \
@@ -56,7 +54,7 @@
     void operator()(const std::string &source_dir = "") {                      \
       if (!cppjit::builder::kernel_name) {                                     \
         cppjit::builder::kernel_name =                                         \
-            std::make_shared<cppjit::builder::GCC>(#kernel_name);              \
+            std::make_shared<cppjit::builder::gcc>(#kernel_name);              \
       }                                                                        \
       if (cppjit::builder::kernel_name->is_verbose()) {                        \
         std::cout << "kernel \"" << #kernel_name                               \
@@ -109,7 +107,7 @@
   std::shared_ptr<cppjit::builder::builder> get_builder_##kernel_name() {      \
     if (!cppjit::builder::kernel_name) {                                       \
       cppjit::builder::kernel_name =                                           \
-          std::make_shared<cppjit::builder::GCC>(#kernel_name);                \
+          std::make_shared<cppjit::builder::gcc>(#kernel_name);                \
     }                                                                          \
     return cppjit::builder::kernel_name;                                       \
   }                                                                            \

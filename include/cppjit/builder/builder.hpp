@@ -1,5 +1,9 @@
 #pragma once
 
+#include <fstream>
+#include <sstream>
+#include <dlfcn.h>
+
 #include "../cppjit_exception.hpp"
 
 #define DEFAULT_KERNEL_COMPILE_DIR "./cppjit_tmp/"
