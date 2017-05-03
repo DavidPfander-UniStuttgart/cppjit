@@ -1,6 +1,6 @@
 # cppjit
 
-cppjit is a simple, easy-to-use c++ just-in-time compiler (frontend actually)
+cppjit is a simple, easy-to-use c++ just-in-time compiler (frontend)
 
 # Features
 
@@ -25,16 +25,18 @@ int main(void) {
 // defines kernel, put in single compilation unit
 CPPJIT_DEFINE_KERNEL(void(), kernel)
 ```
-* kernels can be inline (as above), or provided as files
+* kernels can be inlined (as above) or provided as files
 * supports gcc and cmake as backends to build kernels at application runtime
 * header-only, no compilation required (except for examples and tests) 
-* permissive licence, can be copied into another application
+* permissive license, can be copied into another application
 * support for unix-like operating systems
 * requires a C++14 compiler (might work with C++11)
 
 # How does it work?
-* implements as a wrapper around dlopen(),dlsym(),dlclose()
-* because of this, the kernel function has to have `extern "C"` linkage (classes are support though, see examples)
+* implements as a wrapper around dlopen(), dlsym(), dlclose(), should work on platforms where those are available
+* because of this, the kernel function has to have `extern "C"` linkage:
+  * arguments and return value can still be arbitrary C++ types
+  * classes are supported, see examples
 
 # Bugs or features requests
 * just open a ticket on GitHub
