@@ -1,8 +1,8 @@
 #pragma once
 
+#include <dlfcn.h>
 #include <fstream>
 #include <sstream>
-#include <dlfcn.h>
 
 #include "../cppjit_exception.hpp"
 
@@ -27,14 +27,31 @@ public:
 
   virtual void *compile_kernel(const std::string &source_dir) = 0;
 
-  void *compile_kernel() { return compile_kernel(compile_dir); };
+  void *compile_kernel() {
+      // make sure it actually exists
+      make_compile_dir();
+      
+      return compile_kernel(compile_dir); };
 
   void *compile_inline_kernel(std::string kernel_inline_source) {
+
+    // make sure it actually exists
+    make_compile_dir();
+
     // source_dir = compile_dir;
     std::ofstream kernel_file(compile_dir + kernel_name + ".cpp");
     kernel_file << kernel_inline_source;
     kernel_file.close();
     return compile_kernel(compile_dir);
+  }
+
+  void make_compile_dir() {
+    // create the compile dir if it doesn't exist
+    std::string create_dir_cmd("mkdir -p " + compile_dir);
+    int return_value = std::system(create_dir_cmd.c_str());
+    if (return_value != 0) {
+      throw cppjit_exception("could not create path: " + compile_dir);
+    }
   }
 
   void read_and_print_log(std::string path) {

@@ -11,6 +11,7 @@ public:
   gcc(const std::string &kernel_name) : builder(kernel_name) {}
 
   void *compile_kernel(const std::string &source_dir) override {
+
     // std::string kernel_source_dir = kernel_compile_dir;
     std::string source_file(source_dir + kernel_name + ".cpp");
     std::string object_file(compile_dir + kernel_name + ".o");
@@ -58,7 +59,9 @@ public:
 
   const std::string &get_cpp_flags() { return cpp_flags; }
 
-  void set_cpp_flags(const std::string &cpp_flags) { this->cpp_flags = cpp_flags; }
+  void set_cpp_flags(const std::string &cpp_flags) {
+    this->cpp_flags = cpp_flags;
+  }
 
   const std::string &get_link_flags() { return link_flags; }
 
@@ -80,7 +83,9 @@ public:
 
   const std::string &get_libraries() { return libraries; }
 
-  void set_libraries(const std::string &libraries) { this->libraries = libraries; }
+  void set_libraries(const std::string &libraries) {
+    this->libraries = libraries;
+  }
 
 private:
   std::string compiler = "g++";
