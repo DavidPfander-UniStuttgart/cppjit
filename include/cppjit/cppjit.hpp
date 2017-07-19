@@ -42,7 +42,7 @@
   };                                                                           \
   }                                                                            \
   }                                                                            \
-  cppjit::compiler_inline::kernel_name<                                        \
+  extern cppjit::compiler_inline::kernel_name<                                 \
       cppjit::detail::function_traits<kernel_signature>::return_type,          \
       cppjit::detail::function_traits<kernel_signature>::args_type>            \
       compile_inline_##kernel_name;                                            \
@@ -68,7 +68,7 @@
   };                                                                           \
   }                                                                            \
   }                                                                            \
-  cppjit::compiler::kernel_name<                                               \
+  extern cppjit::compiler::kernel_name<                                        \
       cppjit::detail::function_traits<kernel_signature>::return_type,          \
       cppjit::detail::function_traits<kernel_signature>::args_type>            \
       compile_##kernel_name;                                                   \
@@ -86,6 +86,35 @@
   };                                                                           \
   }                                                                            \
   }                                                                            \
+  extern cppjit::wrapper::kernel_name<                                         \
+      cppjit::detail::function_traits<kernel_signature>::return_type,          \
+      cppjit::detail::function_traits<kernel_signature>::args_type>            \
+      kernel_name;                                                             \
+  namespace cppjit {                                                           \
+  bool is_compiled_##kernel_name();                                            \
+  void set_builder_##kernel_name(                                              \
+      std::shared_ptr<cppjit::builder::builder> builder);                      \
+  std::shared_ptr<cppjit::builder::builder> get_builder_##kernel_name();       \
+  void clear_##kernel_name();                                                  \
+  }
+
+#define CPPJIT_DEFINE_KERNEL(kernel_signature, kernel_name)                    \
+  namespace cppjit {                                                           \
+  namespace kernels {                                                          \
+  std::function<kernel_signature> kernel_name;                                 \
+  }                                                                            \
+  namespace builder {                                                          \
+  std::shared_ptr<cppjit::builder::builder> kernel_name;                       \
+  }                                                                            \
+  }                                                                            \
+  cppjit::compiler_inline::kernel_name<                                        \
+      cppjit::detail::function_traits<kernel_signature>::return_type,          \
+      cppjit::detail::function_traits<kernel_signature>::args_type>            \
+      compile_inline_##kernel_name;                                            \
+  cppjit::compiler::kernel_name<                                               \
+      cppjit::detail::function_traits<kernel_signature>::return_type,          \
+      cppjit::detail::function_traits<kernel_signature>::args_type>            \
+      compile_##kernel_name;                                                   \
   cppjit::wrapper::kernel_name<                                                \
       cppjit::detail::function_traits<kernel_signature>::return_type,          \
       cppjit::detail::function_traits<kernel_signature>::args_type>            \
@@ -117,12 +146,6 @@
   }                                                                            \
   }
 
-#define CPPJIT_DEFINE_KERNEL(kernel_signature, kernel_name)                    \
-  namespace cppjit {                                                           \
-  namespace kernels {                                                          \
-  std::function<kernel_signature> kernel_name;                                 \
-  }                                                                            \
-  namespace builder {                                                          \
-  std::shared_ptr<cppjit::builder::builder> kernel_name;                       \
-  }                                                                            \
-  }
+#define CPPJIT_DECLARE_DEFINE_KERNEL(kernel_signature, kernel_name)            \
+  CPPJIT_DECLARE_KERNEL(kernel_signature, kernel_name)                         \
+  CPPJIT_DEFINE_KERNEL(kernel_signature, kernel_name)
