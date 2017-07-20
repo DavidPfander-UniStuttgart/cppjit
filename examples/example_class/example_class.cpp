@@ -9,12 +9,12 @@ int main(void) {
 
   // cppjit::init();
 
-  compile_inline_my_class_factory_method(
+  cppjit::compile_inline_my_class_factory_method(
       "#include \"../examples/example_class/my_class.hpp\" \n extern \"C\" "
       "my_class_interface* "
       "my_class_factory_method() { return new my_class(); }");
 
-  my_class_interface *instance = my_class_factory_method();
+  my_class_interface *instance = cppjit::my_class_factory_method();
 
   bool is_true = instance->f1(5);
   std::cout << "f1(5) -> " << is_true << std::endl;

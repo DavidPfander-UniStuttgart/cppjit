@@ -41,11 +41,11 @@
     }                                                                          \
   };                                                                           \
   }                                                                            \
-  }                                                                            \
   cppjit::compiler_inline::kernel_name<                                        \
       cppjit::detail::function_traits<kernel_signature>::return_type,          \
       cppjit::detail::function_traits<kernel_signature>::args_type>            \
       compile_inline_##kernel_name;                                            \
+  }                                                                            \
   namespace cppjit {                                                           \
   namespace compiler {                                                         \
   template <typename... Args> struct kernel_name;                              \
@@ -67,11 +67,11 @@
     }                                                                          \
   };                                                                           \
   }                                                                            \
-  }                                                                            \
   cppjit::compiler::kernel_name<                                               \
       cppjit::detail::function_traits<kernel_signature>::return_type,          \
       cppjit::detail::function_traits<kernel_signature>::args_type>            \
       compile_##kernel_name;                                                   \
+  }                                                                            \
   namespace cppjit {                                                           \
   namespace wrapper {                                                          \
   template <typename... Args> struct kernel_name;                              \
@@ -85,11 +85,11 @@
     }                                                                          \
   };                                                                           \
   }                                                                            \
-  }                                                                            \
   cppjit::wrapper::kernel_name<                                                \
       cppjit::detail::function_traits<kernel_signature>::return_type,          \
       cppjit::detail::function_traits<kernel_signature>::args_type>            \
       kernel_name;                                                             \
+  }                                                                            \
   namespace cppjit {                                                           \
   bool is_compiled_##kernel_name() {                                           \
     if (cppjit::kernels::kernel_name) {                                        \

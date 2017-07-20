@@ -6,7 +6,7 @@
 
 int f(char) { return 7; }
 
-CPPJIT_DECLARE_KERNEL(int(int), wrapper)
+CPPJIT_DECLARE_KERNEL(int(int), wrapper_kernel)
 
 int main(void) {
 
@@ -38,17 +38,17 @@ int main(void) {
                    .name()
             << std::endl;
 
-  compile_inline_wrapper(
+  cppjit::compile_inline_wrapper_kernel(
       "#include <iostream> \n extern \"C\" int "
-      "wrapper(int input) { std::cout << \"test "
+      "wrapper_kernel(int input) { std::cout << \"test "
       "hallo wrapper!: \" << input << std::endl; return input;}");
 
   int arg = 18;
-  wrapper(arg);
+  cppjit::wrapper_kernel(arg);
 
   // cppjit::finalize();
 
   return 0;
 }
 
-CPPJIT_DEFINE_KERNEL(int(int), wrapper)
+CPPJIT_DEFINE_KERNEL(int(int), wrapper_kernel)

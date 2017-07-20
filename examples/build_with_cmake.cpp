@@ -32,11 +32,11 @@ int main(void) {
   builder->set_verbose(true);
 
   // compiles the source at the source directory using the cmake builder
-  compile_build_with_cmake_kernel(
+  cppjit::compile_build_with_cmake_kernel(
       "/home/pfandedd/git/cppjit/examples/cmake_kernel");
 
   // now use the kernel function
-  bool result = build_with_cmake_kernel(123);
+  bool result = cppjit::build_with_cmake_kernel(123);
   std::cout << "result: " << result << std::endl;
 
   return 0;

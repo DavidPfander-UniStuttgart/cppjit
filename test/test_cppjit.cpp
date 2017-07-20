@@ -182,18 +182,19 @@ namespace test_call_kernels {
 void simple() {
   std::cout << "testing base case" << std::endl;
   cppjit::get_builder_simple_kernel()->set_verbose(true);
-  compile_inline_simple_kernel("extern \"C\" bool "
-                               "simple_kernel(int i, double d) { return "
-                               "static_cast<double>(i + 1) == d; "
-                               "}");
+  cppjit::compile_inline_simple_kernel(
+      "extern \"C\" bool "
+      "simple_kernel(int i, double d) { return "
+      "static_cast<double>(i + 1) == d; "
+      "}");
 
-  if (!simple_kernel(4, 5.0)) {
+  if (!cppjit::simple_kernel(4, 5.0)) {
     std::cerr << "error: return value did not match: " << __FILE__ << " "
               << __LINE__ << std::endl;
     exit(1);
   }
 
-  if (simple_kernel(100000, 5.0)) {
+  if (cppjit::simple_kernel(100000, 5.0)) {
     std::cerr << "error: return value did not match: " << __FILE__ << " "
               << __LINE__ << std::endl;
     exit(1);
@@ -203,12 +204,12 @@ void simple() {
 void no_arguments() {
   std::cout << "testing kernel without arguments" << std::endl;
   cppjit::get_builder_no_arguments_kernel()->set_verbose(true);
-  compile_inline_no_arguments_kernel(
+  cppjit::compile_inline_no_arguments_kernel(
       "extern \"C\" bool "
       "no_arguments_kernel(void) { return false; "
       "}");
 
-  if (no_arguments_kernel()) {
+  if (cppjit::no_arguments_kernel()) {
     std::cerr << "error: return value did not match: " << __FILE__ << " "
               << __LINE__ << std::endl;
     exit(1);
@@ -218,20 +219,20 @@ void no_arguments() {
 void test_void() {
   std::cout << "testing kernel with void arguments" << std::endl;
   cppjit::get_builder_void_kernel()->set_verbose(true);
-  compile_inline_void_kernel("extern \"C\" void "
-                             "void_kernel(void) {}");
+  cppjit::compile_inline_void_kernel("extern \"C\" void "
+                                     "void_kernel(void) {}");
 
-  void_kernel();
+  cppjit::void_kernel();
 }
 
 void cpp_arguments() {
   std::cout << "testing kernel with c++ arguments" << std::endl;
   cppjit::get_builder_cpp_arguments_kernel()->set_verbose(true);
-  compile_inline_cpp_arguments_kernel(
+  cppjit::compile_inline_cpp_arguments_kernel(
       "#include <string> \n extern \"C\" int "
       "cpp_arguments_kernel(std::string s) { return s.size(); }");
 
-  if (cpp_arguments_kernel("12345") != 5) {
+  if (cppjit::cpp_arguments_kernel("12345") != 5) {
     std::cerr << "error: return value did not match: " << __FILE__ << " "
               << __LINE__ << std::endl;
     exit(1);
@@ -248,8 +249,8 @@ void load_kernel() {
     exit(1);
   }
 
-  compile_inline_load_kernel_kernel("extern \"C\" void "
-                                    "load_kernel_kernel(void) { }");
+  cppjit::compile_inline_load_kernel_kernel("extern \"C\" void "
+                                            "load_kernel_kernel(void) { }");
 
   if (!cppjit::is_compiled_load_kernel_kernel()) {
     std::cerr << "error: kernel still not loaded: " << __FILE__ << " "
@@ -257,7 +258,7 @@ void load_kernel() {
     exit(1);
   }
 
-  load_kernel_kernel();
+  cppjit::load_kernel_kernel();
 }
 
 void kernel_with_errors() {
@@ -265,7 +266,7 @@ void kernel_with_errors() {
   cppjit::get_builder_kernel_with_errors_kernel()->set_verbose(true);
 
   try {
-    compile_inline_kernel_with_errors_kernel(
+    cppjit::compile_inline_kernel_with_errors_kernel(
         "extern \"C\" void "
         "kernel_with_errors_kernel() { this is not a valid symbol; }");
   } catch (cppjit::cppjit_exception &e) {
@@ -298,9 +299,9 @@ void other_kernel_directory() {
 
   // reset source for void kernel to trigger (re)build
   try {
-    compile_inline_void_kernel("extern \"C\" void "
+    cppjit::compile_inline_void_kernel("extern \"C\" void "
                                "void_kernel(void) {}");
-    void_kernel();
+    cppjit::void_kernel();
   } catch (cppjit::cppjit_exception &e) {
     std::cerr << "error: changing the kernel directory lead to non-functional "
                  "kernel: "
