@@ -1,16 +1,16 @@
 Essential:
-- make trivial build system configurable
-- improve API for non-inline-sourced kernels
-- add cmake support for kernels (for arbitrarily complex kernels and other compilers)
+- make trivial build system configurable - CHECK
+- improve API for non-inline-sourced kernels - CHECK
+- add cmake support for kernels (for arbitrarily complex kernels and other compilers) - CHECK
 
 Important:
 - support declare macro that support placement in specific namespace
 - support for c++ symbols- CHECK
 - support for multi-symbol libraries - CHECK, via loading a class
-- examples - IN PROGRESS
+- examples - CHECK (some)
 - add meaningful error messages - CHECK
 - github description
 
 Nice:
-- tests - IN PROGRESS
+- tests - CHECK (some)
 - loading objects? (waiting for usecase) - CHECK
