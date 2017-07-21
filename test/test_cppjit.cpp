@@ -181,8 +181,8 @@ namespace test_call_kernels {
 
 void simple() {
   std::cout << "testing base case" << std::endl;
-  cppjit::get_builder_simple_kernel()->set_verbose(true);
-  cppjit::compile_inline_simple_kernel(
+  cppjit::simple_kernel.get_builder()->set_verbose(true);
+  cppjit::simple_kernel.compile_inline(
       "extern \"C\" bool "
       "simple_kernel(int i, double d) { return "
       "static_cast<double>(i + 1) == d; "
@@ -203,8 +203,8 @@ void simple() {
 
 void no_arguments() {
   std::cout << "testing kernel without arguments" << std::endl;
-  cppjit::get_builder_no_arguments_kernel()->set_verbose(true);
-  cppjit::compile_inline_no_arguments_kernel(
+  cppjit::no_arguments_kernel.get_builder()->set_verbose(true);
+  cppjit::no_arguments_kernel.compile_inline(
       "extern \"C\" bool "
       "no_arguments_kernel(void) { return false; "
       "}");
@@ -218,8 +218,8 @@ void no_arguments() {
 
 void test_void() {
   std::cout << "testing kernel with void arguments" << std::endl;
-  cppjit::get_builder_void_kernel()->set_verbose(true);
-  cppjit::compile_inline_void_kernel("extern \"C\" void "
+  cppjit::void_kernel.get_builder()->set_verbose(true);
+  cppjit::void_kernel.compile_inline("extern \"C\" void "
                                      "void_kernel(void) {}");
 
   cppjit::void_kernel();
@@ -227,8 +227,8 @@ void test_void() {
 
 void cpp_arguments() {
   std::cout << "testing kernel with c++ arguments" << std::endl;
-  cppjit::get_builder_cpp_arguments_kernel()->set_verbose(true);
-  cppjit::compile_inline_cpp_arguments_kernel(
+  cppjit::cpp_arguments_kernel.get_builder()->set_verbose(true);
+  cppjit::cpp_arguments_kernel.compile_inline(
       "#include <string> \n extern \"C\" int "
       "cpp_arguments_kernel(std::string s) { return s.size(); }");
 
@@ -241,18 +241,18 @@ void cpp_arguments() {
 
 void load_kernel() {
   std::cout << "testing manual loading of kernels" << std::endl;
-  cppjit::get_builder_load_kernel_kernel()->set_verbose(true);
+  cppjit::load_kernel_kernel.get_builder()->set_verbose(true);
 
-  if (cppjit::is_compiled_load_kernel_kernel()) {
+  if (cppjit::load_kernel_kernel.is_compiled()) {
     std::cerr << "error: kernel already loaded: " << __FILE__ << " " << __LINE__
               << std::endl;
     exit(1);
   }
 
-  cppjit::compile_inline_load_kernel_kernel("extern \"C\" void "
+  cppjit::load_kernel_kernel.compile_inline("extern \"C\" void "
                                             "load_kernel_kernel(void) { }");
 
-  if (!cppjit::is_compiled_load_kernel_kernel()) {
+  if (!cppjit::load_kernel_kernel.is_compiled()) {
     std::cerr << "error: kernel still not loaded: " << __FILE__ << " "
               << __LINE__ << std::endl;
     exit(1);
@@ -263,10 +263,10 @@ void load_kernel() {
 
 void kernel_with_errors() {
   std::cout << "testing error thrown on kernel with errors" << std::endl;
-  cppjit::get_builder_kernel_with_errors_kernel()->set_verbose(true);
+  cppjit::kernel_with_errors_kernel.get_builder()->set_verbose(true);
 
   try {
-    cppjit::compile_inline_kernel_with_errors_kernel(
+    cppjit::kernel_with_errors_kernel.compile_inline(
         "extern \"C\" void "
         "kernel_with_errors_kernel() { this is not a valid symbol; }");
   } catch (cppjit::cppjit_exception &e) {
@@ -292,15 +292,15 @@ namespace test_helpers {
 
 void other_kernel_directory() {
   std::shared_ptr<cppjit::builder::builder> builder =
-      cppjit::get_builder_void_kernel();
+      cppjit::void_kernel.get_builder();
   builder->set_verbose(true);
   std::string old_kernel_tmp_dir = builder->get_compile_dir();
   builder->set_compile_dir("./kernels_tmp/cppjit_test_tmp_folder", true);
 
   // reset source for void kernel to trigger (re)build
   try {
-    cppjit::compile_inline_void_kernel("extern \"C\" void "
-                               "void_kernel(void) {}");
+    cppjit::void_kernel.compile_inline("extern \"C\" void "
+                                       "void_kernel(void) {}");
     cppjit::void_kernel();
   } catch (cppjit::cppjit_exception &e) {
     std::cerr << "error: changing the kernel directory lead to non-functional "

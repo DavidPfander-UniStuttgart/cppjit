@@ -13,129 +13,89 @@
 #include "cppjit_exception.hpp"
 #include "function_traits.hpp"
 
+namespace cppjit {
+
+// base template for the following specialization
+// required to do the pack-matching in the specialization
+template <typename... Args> struct kernel;
+
+template <typename R, typename... Args>
+class kernel<R, cppjit::detail::pack<Args...>> {
+private:
+  std::string kernel_name;
+  std::shared_ptr<builder::builder> builder;
+  std::function<R(Args...)> kernel_implementation;
+
+public:
+  kernel(const std::string &kernel_name)
+      : kernel_name(kernel_name),
+        builder(std::make_shared<cppjit::builder::gcc>(kernel_name)) {}
+
+  R operator()(Args... args) {
+    if (!kernel_implementation) {
+      throw cppjit::cppjit_exception("kernel not compiled");
+    }
+    return kernel_implementation(std::forward<Args>(args)...);
+  }
+
+  void compile(const std::string &source_dir = "") {
+    if (builder->is_verbose()) {
+      std::cout << "kernel \"" << kernel_name
+                << "\" not initialized: initializing..." << std::endl;
+    }
+    void *uncasted_function = builder->compile_kernel(source_dir);
+    R (*fp)(Args...) = reinterpret_cast<decltype(fp)>(uncasted_function);
+    kernel_implementation = fp;
+  }
+
+  void compile_inline(const std::string &source) {
+    if (builder->is_verbose()) {
+      std::cout << "kernel \"" << kernel_name
+                << "\" not initialized: initializing..." << std::endl;
+    }
+    void *uncasted_function = builder->compile_inline_kernel(source);
+    R (*fp)(Args...) = reinterpret_cast<decltype(fp)>(uncasted_function);
+    kernel_implementation = fp;
+  }
+
+  template <class builder_class>
+  std::shared_ptr<builder_class> get_builder_as() {
+    return std::static_pointer_cast<builder_class>(builder);
+  }
+
+  bool is_compiled() {
+    if (kernel_implementation) {
+      return true;
+    }
+    return false;
+  }
+  void set_builder(std::shared_ptr<cppjit::builder::builder> builder_) {
+    if (!builder) {
+      throw cppjit::cppjit_exception("builder is invalid");
+    }
+    builder = builder_;
+  }
+  std::shared_ptr<cppjit::builder::builder> get_builder() { return builder; }
+  void clear() {
+    kernel_implementation = nullptr;
+    builder = std::make_shared<cppjit::builder::gcc>(kernel_name);
+  }
+};
+}
+
 #define CPPJIT_DECLARE_KERNEL(kernel_signature, kernel_name)                   \
   namespace cppjit {                                                           \
-  namespace kernels {                                                          \
-  extern std::function<kernel_signature> kernel_name;                          \
-  }                                                                            \
-  namespace builder {                                                          \
-  extern std::shared_ptr<cppjit::builder::builder> kernel_name;                \
-  }                                                                            \
-  namespace compiler_inline {                                                  \
-  template <typename... Args> struct kernel_name;                              \
-  template <typename R, typename... Args>                                      \
-  struct kernel_name<R, cppjit::detail::pack<Args...>> {                       \
-    void operator()(const std::string &source) {                               \
-      if (!cppjit::builder::kernel_name) {                                     \
-        cppjit::builder::kernel_name =                                         \
-            std::make_shared<cppjit::builder::gcc>(#kernel_name);              \
-      }                                                                        \
-      if (cppjit::builder::kernel_name->is_verbose()) {                        \
-        std::cout << "kernel \"" << #kernel_name                               \
-                  << "\" not initialized: initializing..." << std::endl;       \
-      }                                                                        \
-      void *uncasted_function =                                                \
-          cppjit::builder::kernel_name->compile_inline_kernel(source);         \
-      R (*fp)(Args...) = reinterpret_cast<decltype(fp)>(uncasted_function);    \
-      cppjit::kernels::kernel_name = fp;                                       \
-    }                                                                          \
-  };                                                                           \
-  }                                                                            \
-  extern cppjit::compiler_inline::kernel_name<                                 \
-      cppjit::detail::function_traits<kernel_signature>::return_type,          \
-      cppjit::detail::function_traits<kernel_signature>::args_type>            \
-      compile_inline_##kernel_name;                                            \
-  namespace compiler {                                                         \
-  template <typename... Args> struct kernel_name;                              \
-  template <typename R, typename... Args>                                      \
-  struct kernel_name<R, cppjit::detail::pack<Args...>> {                       \
-    void operator()(const std::string &source_dir = "") {                      \
-      if (!cppjit::builder::kernel_name) {                                     \
-        cppjit::builder::kernel_name =                                         \
-            std::make_shared<cppjit::builder::gcc>(#kernel_name);              \
-      }                                                                        \
-      if (cppjit::builder::kernel_name->is_verbose()) {                        \
-        std::cout << "kernel \"" << #kernel_name                               \
-                  << "\" not initialized: initializing..." << std::endl;       \
-      }                                                                        \
-      void *uncasted_function =                                                \
-          cppjit::builder::kernel_name->compile_kernel(source_dir);            \
-      R (*fp)(Args...) = reinterpret_cast<decltype(fp)>(uncasted_function);    \
-      cppjit::kernels::kernel_name = fp;                                       \
-    }                                                                          \
-  };                                                                           \
-  }                                                                            \
-  extern cppjit::compiler::kernel_name<                                        \
-      cppjit::detail::function_traits<kernel_signature>::return_type,          \
-      cppjit::detail::function_traits<kernel_signature>::args_type>            \
-      compile_##kernel_name;                                                   \
-  namespace wrapper {                                                          \
-  template <typename... Args> struct kernel_name;                              \
-  template <typename R, typename... Args>                                      \
-  struct kernel_name<R, cppjit::detail::pack<Args...>> {                       \
-    R operator()(Args... args) {                                               \
-      if (!cppjit::kernels::kernel_name) {                                     \
-        throw cppjit::cppjit_exception("kernel not compiled");                 \
-      }                                                                        \
-      return cppjit::kernels::kernel_name(std::forward<Args>(args)...);        \
-    }                                                                          \
-  };                                                                           \
-  }                                                                            \
-  extern cppjit::wrapper::kernel_name<                                         \
+  extern kernel<                                                               \
       cppjit::detail::function_traits<kernel_signature>::return_type,          \
       cppjit::detail::function_traits<kernel_signature>::args_type>            \
       kernel_name;                                                             \
-  bool is_compiled_##kernel_name();                                            \
-  void set_builder_##kernel_name(                                              \
-      std::shared_ptr<cppjit::builder::builder> builder);                      \
-  std::shared_ptr<cppjit::builder::builder> get_builder_##kernel_name();       \
-  void clear_##kernel_name();                                                  \
   }
 
 #define CPPJIT_DEFINE_KERNEL(kernel_signature, kernel_name)                    \
   namespace cppjit {                                                           \
-  namespace kernels {                                                          \
-  std::function<kernel_signature> kernel_name;                                 \
-  }                                                                            \
-  namespace builder {                                                          \
-  std::shared_ptr<cppjit::builder::builder> kernel_name;                       \
-  }                                                                            \
-  cppjit::compiler_inline::kernel_name<                                        \
-      cppjit::detail::function_traits<kernel_signature>::return_type,          \
-      cppjit::detail::function_traits<kernel_signature>::args_type>            \
-      compile_inline_##kernel_name;                                            \
-  cppjit::compiler::kernel_name<                                               \
-      cppjit::detail::function_traits<kernel_signature>::return_type,          \
-      cppjit::detail::function_traits<kernel_signature>::args_type>            \
-      compile_##kernel_name;                                                   \
-  cppjit::wrapper::kernel_name<                                                \
-      cppjit::detail::function_traits<kernel_signature>::return_type,          \
-      cppjit::detail::function_traits<kernel_signature>::args_type>            \
-      kernel_name;                                                             \
-  bool is_compiled_##kernel_name() {                                           \
-    if (cppjit::kernels::kernel_name) {                                        \
-      return true;                                                             \
-    }                                                                          \
-    return false;                                                              \
-  }                                                                            \
-  void set_builder_##kernel_name(                                              \
-      std::shared_ptr<cppjit::builder::builder> builder) {                     \
-    if (!builder) {                                                            \
-      throw cppjit::cppjit_exception("builder is invalid");                    \
-    }                                                                          \
-    cppjit::builder::kernel_name = builder;                                    \
-  }                                                                            \
-  std::shared_ptr<cppjit::builder::builder> get_builder_##kernel_name() {      \
-    if (!cppjit::builder::kernel_name) {                                       \
-      cppjit::builder::kernel_name =                                           \
-          std::make_shared<cppjit::builder::gcc>(#kernel_name);                \
-    }                                                                          \
-    return cppjit::builder::kernel_name;                                       \
-  }                                                                            \
-  void clear_##kernel_name() {                                                 \
-    cppjit::kernels::kernel_name = nullptr;                                    \
-    cppjit::builder::kernel_name = nullptr;                                    \
-  }                                                                            \
+  kernel<cppjit::detail::function_traits<kernel_signature>::return_type,       \
+         cppjit::detail::function_traits<kernel_signature>::args_type>         \
+      kernel_name(#kernel_name);                                               \
   }
 
 #define CPPJIT_DECLARE_DEFINE_KERNEL(kernel_signature, kernel_name)            \

@@ -9,7 +9,7 @@ int main(void) {
 
   // cppjit::init();
 
-  cppjit::compile_inline_my_class_factory_method(
+  cppjit::my_class_factory_method.compile_inline(
       "#include \"../examples/example_class/my_class.hpp\" \n extern \"C\" "
       "my_class_interface* "
       "my_class_factory_method() { return new my_class(); }");

@@ -4,20 +4,20 @@
 #include "cppjit/cppjit.hpp"
 
 // declares kernel
-CPPJIT_DECLARE_KERNEL(void(), kernel)
+CPPJIT_DECLARE_KERNEL(void(), my_kernel)
 
 int main(void) {
 
   // set source, compile and load kernel
-  cppjit::compile_inline_kernel(
+  cppjit::my_kernel.compile_inline(
       "#include <iostream>\n extern \"C\" void "
-      "kernel() { std::cout << \"hello jit world\" << std::endl;}");
+      "my_kernel() { std::cout << \"hello jit world\" << std::endl;}");
 
   // call kernel like an other function
-  cppjit::kernel();
+  cppjit::my_kernel();
 
   return 0;
 }
 
 // defines kernel, put in single compilation unit
-CPPJIT_DEFINE_KERNEL(void(), kernel)
+CPPJIT_DEFINE_KERNEL(void(), my_kernel)

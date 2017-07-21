@@ -26,13 +26,13 @@ int main(void) {
   // create and setup cmake builder
   std::shared_ptr<cppjit::builder::cmake> builder =
       std::make_shared<cppjit::builder::cmake>("build_with_cmake_kernel");
-  cppjit::set_builder_build_with_cmake_kernel(builder);
+  cppjit::build_with_cmake_kernel.set_builder(builder);
 
   // make the compilation and link commands visible on the command line
   builder->set_verbose(true);
 
   // compiles the source at the source directory using the cmake builder
-  cppjit::compile_build_with_cmake_kernel(
+  cppjit::build_with_cmake_kernel.compile(
       "/home/pfandedd/git/cppjit/examples/cmake_kernel");
 
   // now use the kernel function

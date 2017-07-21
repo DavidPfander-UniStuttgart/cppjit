@@ -38,7 +38,7 @@ int main(void) {
                    .name()
             << std::endl;
 
-  cppjit::compile_inline_wrapper_kernel(
+  cppjit::wrapper_kernel.compile_inline(
       "#include <iostream> \n extern \"C\" int "
       "wrapper_kernel(int input) { std::cout << \"test "
       "hallo wrapper!: \" << input << std::endl; return input;}");
