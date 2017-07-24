@@ -10,7 +10,7 @@ class cmake : public builder {
 public:
   cmake(const std::string &kernel_name) : builder(kernel_name) {}
 
-  void *compile_kernel(const std::string &source_dir) override {
+  void *compile_impl() override {
 
     std::string cmake_call("cd " + compile_dir + " && " + cmake_binary + " " +
                            cmake_options + " " + source_dir + " > " +

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../cppjit_exception.hpp"
+#include "../helper.hpp"
 #include "builder.hpp"
 
 namespace cppjit {
@@ -10,7 +11,7 @@ class gcc : public builder {
 public:
   gcc(const std::string &kernel_name) : builder(kernel_name) {}
 
-  void *compile_kernel(const std::string &source_dir) override {
+  void *compile_impl() override {
 
     // std::string kernel_source_dir = kernel_compile_dir;
     std::string source_file(source_dir + kernel_name + ".cpp");

@@ -5,17 +5,33 @@
 #include <sstream>
 
 #include "../cppjit_exception.hpp"
+#include "../helper.hpp"
 
 #define DEFAULT_KERNEL_COMPILE_DIR "./cppjit_tmp/"
 
 namespace cppjit {
+
+// constexpr std::string DEFAULT_KERNEL_COMPILE_DIR = "./cppjit_tmp/";
+
 namespace builder {
 
 class builder {
+protected:
+  std::string kernel_name;
+  bool verbose;
+
+  bool has_source_;
+  bool has_inline_source_;
+  std::string source;
+  std::string source_dir;
+  std::string compile_dir;
+
+  void *kernel_library;
+
 public:
   builder(const std::string &kernel_name, bool verbose = false)
-      : kernel_name(kernel_name), verbose(verbose),
-        compile_dir(DEFAULT_KERNEL_COMPILE_DIR),
+      : kernel_name(kernel_name), verbose(verbose), has_source_(false),
+        has_inline_source_(false), compile_dir(DEFAULT_KERNEL_COMPILE_DIR),
         // source_dir(DEFAULT_KERNEL_COMPILE_DIR),
         kernel_library(nullptr) {}
 
@@ -25,24 +41,32 @@ public:
     }
   }
 
-  virtual void *compile_kernel(const std::string &source_dir) = 0;
+  virtual void *compile_impl() = 0;
 
-  void *compile_kernel() {
-      // make sure it actually exists
-      make_compile_dir();
-      
-      return compile_kernel(compile_dir); };
+  void *compile(const std::string &source_dir) {
+    set_source_dir(source_dir);
 
-  void *compile_inline_kernel(std::string kernel_inline_source) {
+    return compile();
+  }
 
+  void *compile() {
+    if (!has_source_) {
+      throw cppjit_exception("source not set");
+    }
     // make sure it actually exists
     make_compile_dir();
 
+    return compile_impl();
+  };
+
+  void *compile_inline(std::string kernel_inline_source) {
     // source_dir = compile_dir;
+    set_source_inline(kernel_inline_source);
     std::ofstream kernel_file(compile_dir + kernel_name + ".cpp");
     kernel_file << kernel_inline_source;
     kernel_file.close();
-    return compile_kernel(compile_dir);
+
+    return compile();
   }
 
   void make_compile_dir() {
@@ -128,14 +152,29 @@ public:
 
   const std::string &get_compile_dir() { return compile_dir; }
 
-public:
-  std::string kernel_name;
-  bool verbose;
+  void set_source_inline(const std::string &source_) {
+    has_source_ = true;
+    has_inline_source_ = true;
+    source = source_;
+  }
 
-  std::string compile_dir;
-  // std::string source_dir;
+  void set_source_dir(const std::string &source_dir_) {
+    has_source_ = true;
+    has_inline_source_ = false;
+    source_dir = detail::add_slash_if_missing(source_dir_);
+    std::cout << "builder source_dir: " << source_dir << std::endl;
+  }
 
-  void *kernel_library;
+  const std::string &get_source_dir() {
+    if (has_inline_source_) {
+      throw cppjit_exception("inline kernels do not have source directories");
+    }
+    return source_dir;
+  }
+
+  bool has_source() { return has_source_; }
+
+  bool has_inline_source() { return has_inline_source_; }
 };
 
 } // namespace builder

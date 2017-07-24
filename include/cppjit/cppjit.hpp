@@ -38,12 +38,22 @@ public:
     return kernel_implementation(std::forward<Args>(args)...);
   }
 
-  void compile(const std::string &source_dir = "") {
+  void compile() {
     if (builder->is_verbose()) {
       std::cout << "kernel \"" << kernel_name
                 << "\" not initialized: initializing..." << std::endl;
     }
-    void *uncasted_function = builder->compile_kernel(source_dir);
+    void *uncasted_function = builder->compile();
+    R (*fp)(Args...) = reinterpret_cast<decltype(fp)>(uncasted_function);
+    kernel_implementation = fp;
+  }
+
+  void compile(const std::string &source_dir) {
+    if (builder->is_verbose()) {
+      std::cout << "kernel \"" << kernel_name
+                << "\" not initialized: initializing..." << std::endl;
+    }
+    void *uncasted_function = builder->compile(source_dir);
     R (*fp)(Args...) = reinterpret_cast<decltype(fp)>(uncasted_function);
     kernel_implementation = fp;
   }
@@ -53,7 +63,7 @@ public:
       std::cout << "kernel \"" << kernel_name
                 << "\" not initialized: initializing..." << std::endl;
     }
-    void *uncasted_function = builder->compile_inline_kernel(source);
+    void *uncasted_function = builder->compile_inline(source);
     R (*fp)(Args...) = reinterpret_cast<decltype(fp)>(uncasted_function);
     kernel_implementation = fp;
   }
@@ -79,6 +89,27 @@ public:
   void clear() {
     kernel_implementation = nullptr;
     builder = std::make_shared<cppjit::builder::gcc>(kernel_name);
+  }
+  void set_source_inline(const std::string &source_) {
+    builder->set_source_inline(source_);
+  }
+
+  void set_source_dir(const std::string &source_dir_) {
+    std::cout << "cppjit source_dir_: " << source_dir_ << std::endl;
+    builder->set_source_dir(source_dir_);
+  }
+  bool has_source() {
+    if (!builder) {
+      throw cppjit::cppjit_exception("builder is invalid");
+    }
+    return builder->has_source();
+  }
+
+  bool has_inline_source() {
+    if (!builder) {
+      throw cppjit::cppjit_exception("builder is invalid");
+    }
+    return builder->has_inline_source();
   }
 };
 }
