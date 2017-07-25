@@ -62,10 +62,12 @@ public:
 
   void *compile_inline(const std::string &kernel_inline_source) {
     set_source_inline(kernel_inline_source);
-    std::ofstream kernel_file(compile_dir + kernel_name + ".cpp");
+    // make sure the source directory exists
+    // for inline kernels, source_dir == compile_dir
+    make_compile_dir();
+    std::ofstream kernel_file(source_dir + kernel_name + ".cpp");
     kernel_file << kernel_inline_source;
     kernel_file.close();
-    source_dir = compile_dir;
 
     return compile();
   }
@@ -163,6 +165,7 @@ public:
     has_source_ = true;
     has_inline_source_ = true;
     source = source_;
+    source_dir = compile_dir;
   }
 
   void set_source_dir(const std::string &source_dir_) {
