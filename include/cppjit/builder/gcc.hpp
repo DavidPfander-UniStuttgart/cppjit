@@ -12,7 +12,6 @@ public:
   gcc(const std::string &kernel_name) : builder(kernel_name) {}
 
   void *compile_impl() override {
-
     // std::string kernel_source_dir = kernel_compile_dir;
     std::string source_file(source_dir + kernel_name + ".cpp");
     std::string object_file(compile_dir + kernel_name + ".o");

@@ -38,6 +38,7 @@ public:
   ~builder() {
     if (kernel_library) {
       dlclose(kernel_library);
+      kernel_library = nullptr;
     }
   }
 
@@ -59,7 +60,7 @@ public:
     return compile_impl();
   };
 
-  void *compile_inline(std::string kernel_inline_source) {
+  void *compile_inline(const std::string &kernel_inline_source) {
     // source_dir = compile_dir;
     set_source_inline(kernel_inline_source);
     std::ofstream kernel_file(compile_dir + kernel_name + ".cpp");
@@ -93,6 +94,12 @@ public:
   }
 
   void *load_kernel() {
+
+    if (kernel_library) {
+      dlclose(kernel_library);
+      kernel_library = nullptr;
+    }
+
     std::string library_file(compile_dir + "lib" + kernel_name + ".so");
 
     dlerror(); // clear any prior error

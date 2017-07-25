@@ -39,30 +39,18 @@ public:
   }
 
   void compile() {
-    if (builder->is_verbose()) {
-      std::cout << "kernel \"" << kernel_name
-                << "\" not initialized: initializing..." << std::endl;
-    }
     void *uncasted_function = builder->compile();
     R (*fp)(Args...) = reinterpret_cast<decltype(fp)>(uncasted_function);
     kernel_implementation = fp;
   }
 
   void compile(const std::string &source_dir) {
-    if (builder->is_verbose()) {
-      std::cout << "kernel \"" << kernel_name
-                << "\" not initialized: initializing..." << std::endl;
-    }
     void *uncasted_function = builder->compile(source_dir);
     R (*fp)(Args...) = reinterpret_cast<decltype(fp)>(uncasted_function);
     kernel_implementation = fp;
   }
 
   void compile_inline(const std::string &source) {
-    if (builder->is_verbose()) {
-      std::cout << "kernel \"" << kernel_name
-                << "\" not initialized: initializing..." << std::endl;
-    }
     void *uncasted_function = builder->compile_inline(source);
     R (*fp)(Args...) = reinterpret_cast<decltype(fp)>(uncasted_function);
     kernel_implementation = fp;
