@@ -61,11 +61,11 @@ public:
   };
 
   void *compile_inline(const std::string &kernel_inline_source) {
-    // source_dir = compile_dir;
     set_source_inline(kernel_inline_source);
     std::ofstream kernel_file(compile_dir + kernel_name + ".cpp");
     kernel_file << kernel_inline_source;
     kernel_file.close();
+    source_dir = compile_dir;
 
     return compile();
   }
