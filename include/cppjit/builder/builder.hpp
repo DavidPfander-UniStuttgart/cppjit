@@ -128,6 +128,24 @@ public:
     return uncasted_function;
   }
 
+  // returns nullptr in case of failure
+  void *load_other_symbol(const std::string &symbol_name) {
+
+    if (!kernel_library) {
+      throw cppjit_exception("library has not been opened");
+    }
+
+    dlerror(); // clear any prior error
+    void *uncasted_function = dlsym(kernel_library, symbol_name.c_str());
+    char *error = dlerror();
+
+    if (error != nullptr) {
+      // symbol not found
+      return nullptr;
+    }
+    return uncasted_function;
+  }
+
   void set_verbose(bool verbose) { this->verbose = verbose; }
 
   bool is_verbose() { return verbose; }
