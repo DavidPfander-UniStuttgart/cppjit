@@ -3,6 +3,7 @@
 #include "../cppjit_exception.hpp"
 #include "../helper.hpp"
 #include "builder.hpp"
+#include <chrono>
 
 namespace cppjit {
 namespace builder {
@@ -24,27 +25,48 @@ public:
     if (verbose) {
       std::cout << "compile_cmd: " << compile_cmd << std::endl;
     }
+    std::chrono::high_resolution_clock::time_point compile_start =
+        std::chrono::high_resolution_clock::now();
     int return_value = std::system(compile_cmd.c_str());
+    if (verbose) {
+      std::cout << "compile log:" << std::endl;
+      read_and_print_log(compile_dir + kernel_name + "_compile.log");
+    }
     if (return_value != 0) {
-      if (verbose) {
-        std::cerr << "compile log:" << std::endl;
-        read_and_print_log(compile_dir + kernel_name + "_compile.log");
-      }
+
       throw cppjit_exception("error: compilation of kernel failed");
     }
+
+    std::chrono::high_resolution_clock::time_point compile_end =
+        std::chrono::high_resolution_clock::now();
+    double compile_duration =
+        std::chrono::duration<double>(compile_end - compile_start).count();
+    if (verbose) {
+      std::cout << "compile duration: " << compile_duration << std::endl;
+    }
+
     std::string link_cmd(linker + " " + link_flags + " -o " + library_file +
                          " " + object_file + " > " + compile_dir + kernel_name +
                          "_link.log 2>&1");
     if (verbose) {
       std::cout << "link_cmd: " << link_cmd << std::endl;
     }
+    std::chrono::high_resolution_clock::time_point link_start =
+        std::chrono::high_resolution_clock::now();
     return_value = std::system(link_cmd.c_str());
+    if (verbose) {
+      std::cout << "link log:" << std::endl;
+      read_and_print_log(compile_dir + kernel_name + "_link.log");
+    }
     if (return_value != 0) {
-      if (verbose) {
-        std::cerr << "link log:" << std::endl;
-        read_and_print_log(compile_dir + kernel_name + "_link.log");
-      }
       throw cppjit_exception("error: compile of kernel failed");
+    }
+    std::chrono::high_resolution_clock::time_point link_end =
+        std::chrono::high_resolution_clock::now();
+    double link_duration =
+        std::chrono::duration<double>(link_end - link_start).count();
+    if (verbose) {
+      std::cout << "link duration: " << link_duration << std::endl;
     }
     return this->load_kernel();
   }
