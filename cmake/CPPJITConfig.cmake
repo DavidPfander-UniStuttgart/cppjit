@@ -1,0 +1,1 @@
+set(CPPJIT_INCLUDE_DIRS ${CPPJIT_ROOT}/include)
