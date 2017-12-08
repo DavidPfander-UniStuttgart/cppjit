@@ -33,7 +33,8 @@ public:
 
   R operator()(Args... args) {
     if (!kernel_implementation) {
-      throw cppjit::cppjit_exception("kernel not compiled");
+      this->compile();
+      // throw cppjit::cppjit_exception("kernel not compiled");
     }
     return kernel_implementation(std::forward<Args>(args)...);
   }
