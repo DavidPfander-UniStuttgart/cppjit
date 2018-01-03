@@ -36,11 +36,9 @@ public:
         kernel_library(nullptr) {}
 
   ~builder() {
-    if (kernel_library) {
-      dlclose(kernel_library);
-      kernel_library = nullptr;
-    }
-  }
+			//TODO: has separate invalidate method because of owning shared_ptr, improve!
+			invalidate();
+	}
 
   virtual void *compile_impl() = 0;
 
@@ -203,6 +201,13 @@ public:
   bool has_source() { return has_source_; }
 
   bool has_inline_source() { return has_inline_source_; }
+
+  void invalidate() {
+    if (kernel_library) {
+      dlclose(kernel_library);
+      kernel_library = nullptr;
+    }
+  }
 };
 
 } // namespace builder

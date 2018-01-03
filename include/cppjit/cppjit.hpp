@@ -72,11 +72,15 @@ public:
     if (!builder) {
       throw cppjit::cppjit_exception("builder is invalid");
     }
+    // TODO: improve
+    builder->invalidate();
     builder = builder_;
   }
   std::shared_ptr<cppjit::builder::builder> get_builder() { return builder; }
   void clear() {
     kernel_implementation = nullptr;
+    // TODO: improve
+    builder->invalidate();
     builder = std::make_shared<cppjit::builder::gcc>(kernel_name);
   }
   void set_source_inline(const std::string &source_) {
