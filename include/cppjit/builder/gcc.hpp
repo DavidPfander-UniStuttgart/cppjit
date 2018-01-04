@@ -112,8 +112,8 @@ public:
 private:
   std::string compiler = "g++";
   std::string linker = "g++";
-  std::string cpp_flags = "-std=c++14 -fPIC";
-  std::string link_flags = "-shared";
+  std::string cpp_flags = "-std=c++14 -fPIC -fno-gnu-unique";
+  std::string link_flags = "-shared -fno-gnu-unique";
   std::string include_paths = "";
   std::string library_paths = "";
   std::string libraries = "";
