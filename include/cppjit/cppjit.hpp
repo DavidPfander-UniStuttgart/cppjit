@@ -57,9 +57,8 @@ public:
     kernel_implementation = fp;
   }
 
-  template <class builder_class>
-  std::shared_ptr<builder_class> get_builder_as() {
-    return std::static_pointer_cast<builder_class>(builder);
+  template <class builder_class> builder_class &get_builder() {
+    return *std::dynamic_pointer_cast<builder_class>(builder);
   }
 
   bool is_compiled() {
