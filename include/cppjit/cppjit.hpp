@@ -88,7 +88,6 @@ public:
   }
 
   void set_source_dir(const std::string &source_dir_) {
-    std::cout << "cppjit source_dir_: " << source_dir_ << std::endl;
     builder->set_source_dir(source_dir_);
   }
   bool has_source() {

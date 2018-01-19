@@ -36,9 +36,10 @@ public:
         kernel_library(nullptr) {}
 
   ~builder() {
-			//TODO: has separate invalidate method because of owning shared_ptr, improve!
-			invalidate();
-	}
+    // TODO: has separate invalidate method because of owning shared_ptr,
+    // improve!
+    invalidate();
+  }
 
   virtual void *compile_impl() = 0;
 
@@ -188,7 +189,6 @@ public:
     has_source_ = true;
     has_inline_source_ = false;
     source_dir = detail::add_slash_if_missing(source_dir_);
-    std::cout << "builder source_dir: " << source_dir << std::endl;
   }
 
   const std::string &get_source_dir() {
