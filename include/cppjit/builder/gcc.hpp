@@ -81,14 +81,27 @@ public:
 
   const std::string &get_cpp_flags() { return cpp_flags; }
 
-  void set_cpp_flags(const std::string &cpp_flags) {
-    this->cpp_flags = cpp_flags;
+  void set_cpp_flags(const std::string &new_cpp_flags) {
+    this->cpp_flags = new_cpp_flags;
+    std::vector<std::string> essential_cpp_flags = {"-fPIC", "-fno-gnu-unique"};
+    for (std::string &essential_flag : essential_cpp_flags) {
+      if (this->cpp_flags.find(essential_flag) == std::string::npos) {
+        this->cpp_flags = this->cpp_flags + std::string(" ") + essential_flag;
+      }
+    }
   }
 
   const std::string &get_link_flags() { return link_flags; }
 
-  void set_link_flags(const std::string &link_flags) {
-    this->link_flags = link_flags;
+  void set_link_flags(const std::string &new_link_flags) {
+    this->link_flags = new_link_flags;
+    std::vector<std::string> essential_link_flags = {"-shared",
+                                                     "-fno-gnu-unique"};
+    for (std::string &essential_flag : essential_link_flags) {
+      if (this->link_flags.find(essential_flag) == std::string::npos) {
+        this->link_flags = this->link_flags + std::string(" ") + essential_flag;
+      }
+    }
   }
 
   const std::string &get_include_paths() { return include_paths; }
