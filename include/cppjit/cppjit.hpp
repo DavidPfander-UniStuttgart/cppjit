@@ -31,6 +31,12 @@ public:
       : kernel_name(kernel_name),
         builder(std::make_shared<cppjit::builder::gcc>(kernel_name)) {}
 
+  kernel(const std::string &kernel_name, const std::string &kernel_src_dir)
+      : kernel_name(kernel_name),
+        builder(std::make_shared<cppjit::builder::gcc>(kernel_name)) {
+    set_source_dir(kernel_src_dir);
+  }
+
   R operator()(Args... args) {
     if (!kernel_implementation) {
       this->compile();
@@ -123,3 +129,16 @@ public:
 #define CPPJIT_DECLARE_DEFINE_KERNEL(kernel_signature, kernel_name)            \
   CPPJIT_DECLARE_KERNEL(kernel_signature, kernel_name)                         \
   CPPJIT_DEFINE_KERNEL(kernel_signature, kernel_name)
+
+#define CPPJIT_DEFINE_KERNEL_SRC(kernel_signature, kernel_name,                \
+                                 kernel_src_dir)                               \
+  namespace cppjit {                                                           \
+  kernel<cppjit::detail::function_traits<kernel_signature>::return_type,       \
+         cppjit::detail::function_traits<kernel_signature>::args_type>         \
+      kernel_name(#kernel_name, kernel_src_dir);                               \
+  }
+
+#define CPPJIT_DECLARE_DEFINE_KERNEL_SRC(kernel_signature, kernel_name,        \
+                                         kernel_src_dir)                       \
+  CPPJIT_DECLARE_KERNEL(kernel_signature, kernel_name)                         \
+  CPPJIT_DEFINE_KERNEL_SRC(kernel_signature, kernel_name, kernel_src_dir)
