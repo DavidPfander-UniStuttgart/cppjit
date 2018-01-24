@@ -160,22 +160,22 @@ void test_function_traits() {
 }
 
 CPPJIT_DECLARE_KERNEL(bool(int, double), simple_kernel)
-CPPJIT_DEFINE_KERNEL(bool(int, double), simple_kernel)
+CPPJIT_DEFINE_KERNEL_NO_SRC(bool(int, double), simple_kernel)
 
 CPPJIT_DECLARE_KERNEL(bool(void), no_arguments_kernel)
-CPPJIT_DEFINE_KERNEL(bool(void), no_arguments_kernel)
+CPPJIT_DEFINE_KERNEL_NO_SRC(bool(void), no_arguments_kernel)
 
 CPPJIT_DECLARE_KERNEL(void(void), void_kernel)
-CPPJIT_DEFINE_KERNEL(void(void), void_kernel)
+CPPJIT_DEFINE_KERNEL_NO_SRC(void(void), void_kernel)
 
 CPPJIT_DECLARE_KERNEL(int(std::string), cpp_arguments_kernel)
-CPPJIT_DEFINE_KERNEL(int(std::string), cpp_arguments_kernel)
+CPPJIT_DEFINE_KERNEL_NO_SRC(int(std::string), cpp_arguments_kernel)
 
 CPPJIT_DECLARE_KERNEL(void(void), load_kernel_kernel)
-CPPJIT_DEFINE_KERNEL(void(void), load_kernel_kernel)
+CPPJIT_DEFINE_KERNEL_NO_SRC(void(void), load_kernel_kernel)
 
 CPPJIT_DECLARE_KERNEL(void(void), kernel_with_errors_kernel)
-CPPJIT_DEFINE_KERNEL(void(void), kernel_with_errors_kernel)
+CPPJIT_DEFINE_KERNEL_NO_SRC(void(void), kernel_with_errors_kernel)
 
 namespace test_call_kernels {
 

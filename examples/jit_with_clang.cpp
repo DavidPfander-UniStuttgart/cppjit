@@ -34,4 +34,4 @@ int main(void) {
   return 0;
 }
 
-CPPJIT_DEFINE_KERNEL(int(int), test_kernel)
+CPPJIT_DEFINE_KERNEL_NO_SRC(int(int), test_kernel)

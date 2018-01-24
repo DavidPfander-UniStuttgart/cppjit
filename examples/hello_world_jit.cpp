@@ -20,4 +20,4 @@ int main(void) {
 }
 
 // defines kernel, put in single compilation unit
-CPPJIT_DEFINE_KERNEL(void(), my_kernel)
+CPPJIT_DEFINE_KERNEL_NO_SRC(void(), my_kernel)

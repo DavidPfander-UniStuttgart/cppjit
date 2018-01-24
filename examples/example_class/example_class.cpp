@@ -33,4 +33,4 @@ int main(void) {
   return 0;
 }
 
-CPPJIT_DEFINE_KERNEL(my_class_interface *(), my_class_factory_method)
+CPPJIT_DEFINE_KERNEL_NO_SRC(my_class_interface *(), my_class_factory_method)

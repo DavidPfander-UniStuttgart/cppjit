@@ -42,4 +42,4 @@ int main(void) {
   return 0;
 }
 
-CPPJIT_DEFINE_KERNEL(bool(int), build_with_cmake_kernel)
+CPPJIT_DEFINE_KERNEL_NO_SRC(bool(int), build_with_cmake_kernel)

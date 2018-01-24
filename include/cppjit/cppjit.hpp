@@ -85,8 +85,16 @@ public:
   void clear() {
     kernel_implementation = nullptr;
     // TODO: improve
-    builder->invalidate();
-    builder = std::make_shared<cppjit::builder::gcc>(kernel_name);
+
+    if (builder->has_source() && !builder->has_inline_source()) {
+      std::string old_source_dir = builder->get_source_dir();
+      builder->invalidate();
+      builder = std::make_shared<cppjit::builder::gcc>(kernel_name);
+      builder->set_source_dir(old_source_dir);
+    } else {
+      builder->invalidate();
+      builder = std::make_shared<cppjit::builder::gcc>(kernel_name);
+    }
   }
   void set_source_inline(const std::string &source_) {
     builder->set_source_inline(source_);
@@ -119,26 +127,24 @@ public:
       kernel_name;                                                             \
   }
 
-#define CPPJIT_DEFINE_KERNEL(kernel_signature, kernel_name)                    \
+#define CPPJIT_DEFINE_KERNEL_NO_SRC(kernel_signature, kernel_name)             \
   namespace cppjit {                                                           \
   kernel<cppjit::detail::function_traits<kernel_signature>::return_type,       \
          cppjit::detail::function_traits<kernel_signature>::args_type>         \
       kernel_name(#kernel_name);                                               \
   }
 
-#define CPPJIT_DECLARE_DEFINE_KERNEL(kernel_signature, kernel_name)            \
+#define CPPJIT_KERNEL_NO_SRC(kernel_signature, kernel_name)                    \
   CPPJIT_DECLARE_KERNEL(kernel_signature, kernel_name)                         \
   CPPJIT_DEFINE_KERNEL(kernel_signature, kernel_name)
 
-#define CPPJIT_DEFINE_KERNEL_SRC(kernel_signature, kernel_name,                \
-                                 kernel_src_dir)                               \
+#define CPPJIT_DEFINE_KERNEL(kernel_signature, kernel_name, kernel_src_dir)    \
   namespace cppjit {                                                           \
   kernel<cppjit::detail::function_traits<kernel_signature>::return_type,       \
          cppjit::detail::function_traits<kernel_signature>::args_type>         \
       kernel_name(#kernel_name, kernel_src_dir);                               \
   }
 
-#define CPPJIT_DECLARE_DEFINE_KERNEL_SRC(kernel_signature, kernel_name,        \
-                                         kernel_src_dir)                       \
+#define CPPJIT_KERNEL(kernel_signature, kernel_name, kernel_src_dir)           \
   CPPJIT_DECLARE_KERNEL(kernel_signature, kernel_name)                         \
-  CPPJIT_DEFINE_KERNEL_SRC(kernel_signature, kernel_name, kernel_src_dir)
+  CPPJIT_DEFINE_KERNEL(kernel_signature, kernel_name, kernel_src_dir)
