@@ -288,30 +288,30 @@ void test_call_kernels() {
 }
 }
 
-namespace test_helpers {
+// namespace test_helpers {
 
-void other_kernel_directory() {
-  std::shared_ptr<cppjit::builder::builder> builder =
-      cppjit::void_kernel.get_builder();
-  builder->set_verbose(true);
-  std::string old_kernel_tmp_dir = builder->get_compile_dir();
-  builder->set_compile_dir("./kernels_tmp/cppjit_test_tmp_folder", true);
+// void other_kernel_directory() {
+//   std::shared_ptr<cppjit::builder::builder> builder =
+//       cppjit::void_kernel.get_builder();
+//   builder->set_verbose(true);
+//   std::string old_kernel_tmp_dir = builder->get_compile_dir();
+//   builder->set_compile_dir("./kernels_tmp/cppjit_test_tmp_folder", true);
 
-  // reset source for void kernel to trigger (re)build
-  try {
-    cppjit::void_kernel.compile_inline("extern \"C\" void "
-                                       "void_kernel(void) {}");
-    cppjit::void_kernel();
-  } catch (cppjit::cppjit_exception &e) {
-    std::cerr << "error: changing the kernel directory lead to non-functional "
-                 "kernel: "
-              << __FILE__ << " " << __LINE__ << std::endl;
-    exit(1);
-  }
-}
+//   // reset source for void kernel to trigger (re)build
+//   try {
+//     cppjit::void_kernel.compile_inline("extern \"C\" void "
+//                                        "void_kernel(void) {}");
+//     cppjit::void_kernel();
+//   } catch (cppjit::cppjit_exception &e) {
+//     std::cerr << "error: changing the kernel directory lead to non-functional "
+//                  "kernel: "
+//               << __FILE__ << " " << __LINE__ << std::endl;
+//     exit(1);
+//   }
+// }
 
-void test_helpers() { other_kernel_directory(); }
-}
+// void test_helpers() { other_kernel_directory(); }
+// }
 
 int main(void) {
   // cppjit::init();
@@ -320,7 +320,7 @@ int main(void) {
             << std::endl;
   test_function_traits::test_function_traits();
   test_call_kernels::test_call_kernels();
-  test_helpers::test_helpers();
+  // test_helpers::test_helpers();
   // cppjit::finalize();
   std::cout << "no early exit, tests ran successfully" << std::endl;
 }

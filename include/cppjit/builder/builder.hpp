@@ -2,14 +2,17 @@
 
 #include <dlfcn.h>
 #include <fstream>
+#include <random>
 #include <sstream>
+// #include <filesystem>
 
 #include "../cppjit_exception.hpp"
 #include "../helper.hpp"
 
-#define DEFAULT_KERNEL_COMPILE_DIR "./cppjit_tmp/"
-
 namespace cppjit {
+namespace detail {
+constexpr char DEFAULT_KERNEL_COMPILE_DIR[] = "./cppjit_tmp/";
+}
 
 // constexpr std::string DEFAULT_KERNEL_COMPILE_DIR = "./cppjit_tmp/";
 
@@ -28,12 +31,41 @@ protected:
 
   void *kernel_library;
 
+  void remove_kernel_dir() {
+    std::string rm_kernel_tmp_dir("rm -R " + compile_dir);
+    int return_value = std::system(rm_kernel_tmp_dir.c_str());
+    if (return_value != 0) {
+      std::cerr << "could not delete kernel temporary directory" << std::endl;
+      std::terminate();
+    }
+  }
+
 public:
   builder(const std::string &kernel_name, bool verbose = false)
       : kernel_name(kernel_name), verbose(verbose), has_source_(false),
-        has_inline_source_(false), compile_dir(DEFAULT_KERNEL_COMPILE_DIR),
+        has_inline_source_(false),
         // source_dir(DEFAULT_KERNEL_COMPILE_DIR),
-        kernel_library(nullptr) {}
+        kernel_library(nullptr) {
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_int_distribution<int> distribution(0, 1000000);
+
+    while (true) {
+      compile_dir = std::string(detail::DEFAULT_KERNEL_COMPILE_DIR) +
+                    kernel_name + std::string("_") +
+                    std::to_string(distribution(mt)) + std::string("/");
+      std::cout << "compile_dir: " << compile_dir << std::endl;
+      std::string dir_check_cmd("test -d " + compile_dir);
+      int return_value = std::system(dir_check_cmd.c_str());
+      std::cout << "return_value: " << return_value << std::endl;
+      if (return_value != 0) {
+        break;
+      }
+    }
+    make_compile_dir();
+  }
+
+  builder(const builder &) = delete;
 
   ~builder() {
     // TODO: has separate invalidate method because of owning shared_ptr,
@@ -73,8 +105,16 @@ public:
 
   void make_compile_dir() {
     // create the compile dir if it doesn't exist
+    std::string dir_check_cmd("test -d " + compile_dir);
+    int return_value = std::system(dir_check_cmd.c_str());
+    if (return_value == 0) {
+      // already exists
+      return;
+    }
+
+    // else create
     std::string create_dir_cmd("mkdir -p " + compile_dir);
-    int return_value = std::system(create_dir_cmd.c_str());
+    return_value = std::system(create_dir_cmd.c_str());
     if (return_value != 0) {
       throw cppjit_exception("could not create path: " + compile_dir);
     }
@@ -149,32 +189,35 @@ public:
 
   bool is_verbose() { return verbose; }
 
-  void set_compile_dir(std::string path, bool create_directory = false) {
-    if (path.size() == 0) {
-      throw cppjit_exception("specified temporary dir cannot be empty");
-    }
-    // create directory if set
-    if (create_directory) {
-      std::string create_dir_cmd("mkdir -p " + path);
-      int return_value = std::system(create_dir_cmd.c_str());
-      if (return_value != 0) {
-        throw cppjit_exception("could not create path: " + path);
-      }
-    }
-    // check whether path exists and is a directory
-    std::string dir_check_cmd("test -d " + path);
-    int return_value = std::system(dir_check_cmd.c_str());
-    if (return_value != 0) {
-      throw cppjit_exception("specified temporary path does not exist: " +
-                             path);
-    }
+  // TODO: disabled as dir cleanup requires change, reenable?
+  // void set_compile_dir(std::string path, bool create_directory = false) {
+  //   // if a module was loaded, unload, then remove compile dir
+  //   invalidate();
+  //   if (path.size() == 0) {
+  //     throw cppjit_exception("specified temporary dir cannot be empty");
+  //   }
+  //   // create directory if set
+  //   if (create_directory) {
+  //     std::string create_dir_cmd("mkdir -p " + path);
+  //     int return_value = std::system(create_dir_cmd.c_str());
+  //     if (return_value != 0) {
+  //       throw cppjit_exception("could not create path: " + path);
+  //     }
+  //   }
+  //   // check whether path exists and is a directory
+  //   std::string dir_check_cmd("test -d " + path);
+  //   int return_value = std::system(dir_check_cmd.c_str());
+  //   if (return_value != 0) {
+  //     throw cppjit_exception("specified temporary path does not exist: " +
+  //                            path);
+  //   }
 
-    // normalize path
-    if (path[path.size() - 1] != '/') {
-      path = path + "/";
-    }
-    compile_dir = path;
-  }
+  //   // normalize path
+  //   if (path[path.size() - 1] != '/') {
+  //     path = path + "/";
+  //   }
+  //   compile_dir = path;
+  // }
 
   const std::string &get_compile_dir() { return compile_dir; }
 
@@ -207,6 +250,7 @@ public:
       dlclose(kernel_library);
       kernel_library = nullptr;
     }
+    remove_kernel_dir();
   }
 };
 
