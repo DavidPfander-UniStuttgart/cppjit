@@ -25,15 +25,18 @@ private:
   std::string kernel_name;
   std::shared_ptr<builder::builder> builder;
   std::function<R(Args...)> kernel_implementation;
+  bool verbose;
 
 public:
   kernel(const std::string &kernel_name)
       : kernel_name(kernel_name),
-        builder(std::make_shared<cppjit::builder::gcc>(kernel_name)) {}
+        builder(std::make_shared<cppjit::builder::gcc>(kernel_name)),
+        verbose(false) {}
 
   kernel(const std::string &kernel_name, const std::string &kernel_src_dir)
       : kernel_name(kernel_name),
-        builder(std::make_shared<cppjit::builder::gcc>(kernel_name)) {
+        builder(std::make_shared<cppjit::builder::gcc>(kernel_name)),
+        verbose(false) {
     set_source_dir(kernel_src_dir);
   }
 
@@ -63,6 +66,8 @@ public:
     kernel_implementation = fp;
   }
 
+  bool has_builder() { return this->builder; }
+
   template <class builder_class> builder_class &get_builder() {
     return *std::dynamic_pointer_cast<builder_class>(builder);
   }
@@ -73,6 +78,16 @@ public:
     }
     return false;
   }
+
+  void set_verbose(bool verbose) {
+    this->verbose = verbose;
+    if (builder) {
+      builder->set_builder_verbose(verbose);
+    }
+  }
+
+  bool is_verbose() { return verbose; }
+
   void set_builder(std::shared_ptr<cppjit::builder::builder> builder_) {
     if (!builder) {
       throw cppjit::cppjit_exception("builder is invalid");
@@ -82,18 +97,20 @@ public:
     builder = builder_;
   }
   std::shared_ptr<cppjit::builder::builder> get_builder() { return builder; }
+
+  // have to specify new builder manually after clear
   void clear() {
     kernel_implementation = nullptr;
-    // TODO: improve
-
-    if (builder->has_source() && !builder->has_inline_source()) {
-      std::string old_source_dir = builder->get_source_dir();
+    if (builder) {
+      std::string old_source_dir;
+      if (!this->has_inline_source()) {
+        old_source_dir = builder->get_source_dir();
+      }
       builder->invalidate();
       builder = std::make_shared<cppjit::builder::gcc>(kernel_name);
-      builder->set_source_dir(old_source_dir);
-    } else {
-      builder->invalidate();
-      builder = std::make_shared<cppjit::builder::gcc>(kernel_name);
+      if (!this->has_inline_source()) {
+        builder->set_source_dir(old_source_dir);
+      }
     }
   }
   void set_source_inline(const std::string &source_) {

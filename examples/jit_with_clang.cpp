@@ -8,12 +8,11 @@
 CPPJIT_DECLARE_KERNEL(int(int), test_kernel)
 
 int main(void) {
+  // make the compilation and link commands visible on the command line
+  cppjit::test_kernel.set_verbose(true);
 
   cppjit::builder::gcc &builder =
       cppjit::test_kernel.get_builder<cppjit::builder::gcc>();
-
-  // make the compilation and link commands visible on the command line
-  builder.set_verbose(true);
 
   // clang command-line interface is compatible to gcc, just change compile and
   // link commands (clang is also ABI compatible)

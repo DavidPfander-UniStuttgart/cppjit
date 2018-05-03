@@ -28,15 +28,19 @@ protected:
   std::string source;
   std::string source_dir;
   std::string compile_dir;
+  bool compile_dir_created;
 
   void *kernel_library;
 
   void remove_kernel_dir() {
-    std::string rm_kernel_tmp_dir("rm -R " + compile_dir);
-    int return_value = std::system(rm_kernel_tmp_dir.c_str());
-    if (return_value != 0) {
-      std::cerr << "could not delete kernel temporary directory" << std::endl;
-      std::terminate();
+    if (compile_dir_created) {
+      std::string rm_kernel_tmp_dir("rm -R " + compile_dir);
+      int return_value = std::system(rm_kernel_tmp_dir.c_str());
+      if (return_value != 0) {
+        std::cerr << "could not delete kernel temporary directory" << std::endl;
+        std::terminate();
+      }
+      compile_dir_created = false;
     }
   }
 
@@ -45,25 +49,7 @@ public:
       : kernel_name(kernel_name), verbose(verbose), has_source_(false),
         has_inline_source_(false),
         // source_dir(DEFAULT_KERNEL_COMPILE_DIR),
-        kernel_library(nullptr) {
-    std::random_device rd;
-    std::mt19937 mt(rd());
-    std::uniform_int_distribution<int> distribution(0, 1000000);
-
-    while (true) {
-      compile_dir = std::string(detail::DEFAULT_KERNEL_COMPILE_DIR) +
-                    kernel_name + std::string("_") +
-                    std::to_string(distribution(mt)) + std::string("/");
-      std::cout << "compile_dir: " << compile_dir << std::endl;
-      std::string dir_check_cmd("test -d " + compile_dir);
-      int return_value = std::system(dir_check_cmd.c_str());
-      std::cout << "return_value: " << return_value << std::endl;
-      if (return_value != 0) {
-        break;
-      }
-    }
-    make_compile_dir();
-  }
+        compile_dir(""), compile_dir_created(false), kernel_library(nullptr) {}
 
   builder(const builder &) = delete;
 
@@ -104,19 +90,28 @@ public:
   }
 
   void make_compile_dir() {
-    // create the compile dir if it doesn't exist
-    std::string dir_check_cmd("test -d " + compile_dir);
-    int return_value = std::system(dir_check_cmd.c_str());
-    if (return_value == 0) {
-      // already exists
-      return;
-    }
+    if (!compile_dir_created) {
+      std::random_device rd;
+      std::mt19937 mt(rd());
+      std::uniform_int_distribution<int> distribution(0, 1000000);
 
-    // else create
-    std::string create_dir_cmd("mkdir -p " + compile_dir);
-    return_value = std::system(create_dir_cmd.c_str());
-    if (return_value != 0) {
-      throw cppjit_exception("could not create path: " + compile_dir);
+      // find available name of kernel compile dir
+      while (true) {
+        compile_dir = std::string(detail::DEFAULT_KERNEL_COMPILE_DIR) +
+                      kernel_name + std::string("_") +
+                      std::to_string(distribution(mt)) + std::string("/");
+        std::string dir_check_cmd("test -d " + compile_dir);
+        int return_value = std::system(dir_check_cmd.c_str());
+        if (return_value != 0) {
+          break;
+        }
+      }
+      std::string create_dir_cmd("mkdir -p " + compile_dir);
+      int return_value = std::system(create_dir_cmd.c_str());
+      if (return_value != 0) {
+        throw cppjit_exception("could not create path: " + compile_dir);
+      }
+      compile_dir_created = true;
     }
   }
 
@@ -185,9 +180,9 @@ public:
     return uncasted_function;
   }
 
-  void set_verbose(bool verbose) { this->verbose = verbose; }
+  void set_builder_verbose(bool verbose) { this->verbose = verbose; }
 
-  bool is_verbose() { return verbose; }
+  bool is_builder_verbose() { return verbose; }
 
   // TODO: disabled as dir cleanup requires change, reenable?
   // void set_compile_dir(std::string path, bool create_directory = false) {

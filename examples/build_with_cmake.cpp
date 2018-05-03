@@ -23,13 +23,13 @@ int main(void) {
   absolute_kernel_path += working_directory;
   absolute_kernel_path += "/examples/cmake_kernel";
 
+  // make the compilation and link commands visible on the command line
+  cppjit::build_with_cmake_kernel.set_verbose(true);
+
   // create and setup cmake builder
   std::shared_ptr<cppjit::builder::cmake> builder =
       std::make_shared<cppjit::builder::cmake>("build_with_cmake_kernel");
   cppjit::build_with_cmake_kernel.set_builder(builder);
-
-  // make the compilation and link commands visible on the command line
-  builder->set_verbose(true);
 
   // compiles the source at the source directory using the cmake builder
   cppjit::build_with_cmake_kernel.compile(

@@ -181,7 +181,7 @@ namespace test_call_kernels {
 
 void simple() {
   std::cout << "testing base case" << std::endl;
-  cppjit::simple_kernel.get_builder()->set_verbose(true);
+  cppjit::simple_kernel.set_verbose(true);
   cppjit::simple_kernel.compile_inline(
       "extern \"C\" bool "
       "simple_kernel(int i, double d) { return "
@@ -203,7 +203,7 @@ void simple() {
 
 void no_arguments() {
   std::cout << "testing kernel without arguments" << std::endl;
-  cppjit::no_arguments_kernel.get_builder()->set_verbose(true);
+  cppjit::no_arguments_kernel.set_verbose(true);
   cppjit::no_arguments_kernel.compile_inline(
       "extern \"C\" bool "
       "no_arguments_kernel(void) { return false; "
@@ -218,7 +218,7 @@ void no_arguments() {
 
 void test_void() {
   std::cout << "testing kernel with void arguments" << std::endl;
-  cppjit::void_kernel.get_builder()->set_verbose(true);
+  cppjit::void_kernel.set_verbose(true);
   cppjit::void_kernel.compile_inline("extern \"C\" void "
                                      "void_kernel(void) {}");
 
@@ -227,7 +227,7 @@ void test_void() {
 
 void cpp_arguments() {
   std::cout << "testing kernel with c++ arguments" << std::endl;
-  cppjit::cpp_arguments_kernel.get_builder()->set_verbose(true);
+  cppjit::cpp_arguments_kernel.set_verbose(true);
   cppjit::cpp_arguments_kernel.compile_inline(
       "#include <string> \n extern \"C\" int "
       "cpp_arguments_kernel(std::string s) { return s.size(); }");
@@ -241,7 +241,7 @@ void cpp_arguments() {
 
 void load_kernel() {
   std::cout << "testing manual loading of kernels" << std::endl;
-  cppjit::load_kernel_kernel.get_builder()->set_verbose(true);
+  cppjit::load_kernel_kernel.set_verbose(true);
 
   if (cppjit::load_kernel_kernel.is_compiled()) {
     std::cerr << "error: kernel already loaded: " << __FILE__ << " " << __LINE__
@@ -263,7 +263,7 @@ void load_kernel() {
 
 void kernel_with_errors() {
   std::cout << "testing error thrown on kernel with errors" << std::endl;
-  cppjit::kernel_with_errors_kernel.get_builder()->set_verbose(true);
+  cppjit::kernel_with_errors_kernel.set_verbose(true);
 
   try {
     cppjit::kernel_with_errors_kernel.compile_inline(
@@ -303,7 +303,8 @@ void test_call_kernels() {
 //                                        "void_kernel(void) {}");
 //     cppjit::void_kernel();
 //   } catch (cppjit::cppjit_exception &e) {
-//     std::cerr << "error: changing the kernel directory lead to non-functional "
+//     std::cerr << "error: changing the kernel directory lead to non-functional
+//     "
 //                  "kernel: "
 //               << __FILE__ << " " << __LINE__ << std::endl;
 //     exit(1);
