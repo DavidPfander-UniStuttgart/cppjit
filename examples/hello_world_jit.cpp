@@ -3,8 +3,8 @@
 
 #include "cppjit/cppjit.hpp"
 
-// declares kernel
-CPPJIT_DECLARE_KERNEL(void(), my_kernel)
+// declares and defines kernel
+CPPJIT_KERNEL_NO_SRC(void(), my_kernel)
 
 int main(void) {
 
@@ -18,6 +18,3 @@ int main(void) {
 
   return 0;
 }
-
-// defines kernel, put in single compilation unit
-CPPJIT_DEFINE_KERNEL_NO_SRC(void(), my_kernel)

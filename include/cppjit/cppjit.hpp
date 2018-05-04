@@ -153,7 +153,7 @@ public:
 
 #define CPPJIT_KERNEL_NO_SRC(kernel_signature, kernel_name)                    \
   CPPJIT_DECLARE_KERNEL(kernel_signature, kernel_name)                         \
-  CPPJIT_DEFINE_KERNEL(kernel_signature, kernel_name)
+  CPPJIT_DEFINE_KERNEL_NO_SRC(kernel_signature, kernel_name)
 
 #define CPPJIT_DEFINE_KERNEL(kernel_signature, kernel_name, kernel_src_dir)    \
   namespace cppjit {                                                           \
