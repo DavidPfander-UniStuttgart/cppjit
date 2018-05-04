@@ -5,5 +5,5 @@ jobs:
        - image: ubuntu:18.04
      steps:
        - checkout
-       - run: apt-get -y install git
+       - run: apt update && apt install -y git
        - run: ./build-all.sh
