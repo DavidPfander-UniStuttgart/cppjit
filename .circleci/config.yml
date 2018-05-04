@@ -5,5 +5,5 @@ jobs:
        - image: ubuntu:18.04
      steps:
        - checkout
-       - run: apt update && apt install -y git
+       - run: apt update && apt install -y git wget build-essential gcc
        - run: ./build-all.sh
