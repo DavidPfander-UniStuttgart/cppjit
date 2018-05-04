@@ -4,6 +4,11 @@ set -x
 
 echo "in cppjit source-me"
 
+if [[ -z "$PARALLEL_BUILD" ]]; then
+    #use all available CPUs
+    export PARALLEL_BUILD=$((`lscpu -p=cpu | wc -l`-4))
+fi
+
 REL_BASE_PATH=`dirname "$BASH_SOURCE"`
 BASE_PATH=`readlink -f $REL_BASE_PATH`
 

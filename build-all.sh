@@ -12,4 +12,4 @@ git pull
 mkdir -p build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX="$CPPJIT_ROOT" ../
-make -j4 VERBOSE=1 install
+make -j${PARALLEL_BUILD} VERBOSE=1 install
