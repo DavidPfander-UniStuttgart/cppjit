@@ -5,5 +5,5 @@ jobs:
        - image: circleci/ubuntu-server:latest
      steps:
        - checkout
-       - run: apt-get install git
+       - run: apt-get -y install git
        - run: ./build-all.sh
