@@ -113,9 +113,9 @@ public:
       }
     }
   }
-  void set_source_inline(const std::string &source_) {
-    builder->set_source_inline(source_);
-  }
+  // void set_source_inline(const std::string &source_) {
+  //   builder->set_source_inline(source_);
+  // }
 
   void set_source_dir(const std::string &source_dir_) {
     builder->set_source_dir(source_dir_);
