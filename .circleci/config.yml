@@ -1,9 +1,8 @@
 version: 2
 jobs:
-  build:
-    docker:
-      - image: docker/ubuntu:18.04
-    steps:
-      - run: echo "hallo"
-
-
+   build:
+     docker:
+       - image: circleci/golang:latest
+     steps:
+       - checkout
+       - run: echo "hello world"
