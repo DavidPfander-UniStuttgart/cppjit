@@ -51,7 +51,16 @@ public:
         // source_dir(DEFAULT_KERNEL_COMPILE_DIR),
         compile_dir(""), compile_dir_created(false), kernel_library(nullptr) {}
 
-  builder(const builder &) = delete;
+  // builder(const builder &) = delete;
+  builder(const builder &other)
+      : kernel_name(other.kernel_name), verbose(other.verbose),
+        has_source_(other.has_source_),
+        has_inline_source_(other.has_inline_source_), source(other.source),
+        compile_dir(""), compile_dir_created(false), kernel_library(nullptr) {
+    if (!other.has_inline_source_) {
+      source_dir = other.source_dir;
+    }
+  }
 
   ~builder() {
     // TODO: has separate invalidate method because of owning shared_ptr,
@@ -74,6 +83,13 @@ public:
     // make sure it actually exists
     make_compile_dir();
 
+    if (has_inline_source_) {
+      source_dir = compile_dir;
+      std::ofstream kernel_file(source_dir + kernel_name + ".cpp");
+      kernel_file << source;
+      kernel_file.close();
+    }
+
     return compile_impl();
   };
 
@@ -87,11 +103,6 @@ public:
     has_source_ = true;
     has_inline_source_ = true;
     source = kernel_inline_source;
-    source_dir = compile_dir;
-
-    std::ofstream kernel_file(source_dir + kernel_name + ".cpp");
-    kernel_file << kernel_inline_source;
-    kernel_file.close();
 
     return compile();
   }
@@ -260,6 +271,8 @@ public:
     }
     remove_kernel_dir();
   }
+
+  virtual builder *clone() = 0;
 };
 
 } // namespace builder

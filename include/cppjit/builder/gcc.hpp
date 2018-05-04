@@ -39,8 +39,7 @@ public:
 
     std::ofstream kernel_header_file(compile_dir + "cppjit_kernel.hpp");
     kernel_header_file << "#pragma once" << std::endl;
-    kernel_header_file << "#define CPPJIT_EXPORT extern \"C\""
-                       << std::endl;
+    kernel_header_file << "#define CPPJIT_EXPORT extern \"C\"" << std::endl;
     kernel_header_file.close();
 
     if (verbose) {
@@ -141,6 +140,8 @@ public:
   void set_libraries(const std::string &libraries) {
     this->libraries = libraries;
   }
+
+  virtual builder *clone() override { return new gcc(*this); }
 };
 
 } // namespace builder

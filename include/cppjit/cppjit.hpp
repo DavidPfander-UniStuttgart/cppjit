@@ -40,6 +40,12 @@ public:
     set_source_dir(kernel_src_dir);
   }
 
+  kernel(const kernel<R, cppjit::detail::pack<Args...>> &other) {
+    this->kernel_name = other.kernel_name;
+    this->builder = std::shared_ptr<builder::builder>(other.builder->clone());
+    this->verbose = other.verbose;
+  }
+
   R operator()(Args... args) {
     if (!kernel_implementation) {
       this->compile();

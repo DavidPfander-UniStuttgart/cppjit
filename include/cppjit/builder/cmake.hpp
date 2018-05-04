@@ -7,6 +7,12 @@ namespace cppjit {
 namespace builder {
 
 class cmake : public builder {
+private:
+  std::string cmake_binary = "cmake";
+  std::string cmake_options;
+  std::string make_binary = "make";
+  std::string make_options = "";
+
 public:
   cmake(const std::string &kernel_name) : builder(kernel_name) {}
 
@@ -45,11 +51,7 @@ public:
     return this->load_kernel();
   }
 
-private:
-  std::string cmake_binary = "cmake";
-  std::string cmake_options;
-  std::string make_binary = "make";
-  std::string make_options = "";
+  virtual builder *clone() override { return new cmake(*this); }
 };
 
 } // namespace builder

@@ -81,6 +81,10 @@ set(SOURCES_STANDARD_CPP_FILE_KERNEL "examples/standard_cpp_file_kernel.cpp")
 add_executable(standard_cpp_file_kernel ${SOURCES_STANDARD_CPP_FILE_KERNEL})
 target_link_libraries(standard_cpp_file_kernel cppjit)
 
+set(SOURCES_CLONE_KERNEL "examples/clone_kernel.cpp")
+add_executable(clone_kernel ${SOURCES_CLONE_KERNEL})
+target_link_libraries(clone_kernel cppjit)
+
 set(SOURCES_TEST "test/test_cppjit.cpp")
 add_executable(test_cppjit ${SOURCES_TEST})
 target_link_libraries(test_cppjit cppjit)
