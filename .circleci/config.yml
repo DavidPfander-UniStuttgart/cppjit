@@ -6,5 +6,6 @@ jobs:
      steps:
        - checkout
        - run: apt update && apt install -y git wget build-essential gcc
-       - run: mkdir -p ~/.ssh; ssh-keyscan github.com > ~/.ssh/known_hosts
+       - run: mkdir -p ~/.ssh; ssh-keyscan github.com >> ~/.ssh/known_hosts
+       - run: git checkout master
        - run: ./build-all.sh
