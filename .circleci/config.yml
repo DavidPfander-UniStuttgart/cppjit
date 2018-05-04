@@ -5,7 +5,6 @@ jobs:
       - image: ubuntu:18.04
     steps:
       - checkout
-      - run:
-        - ./build-all.sh
-      - run:
-        - ./build/test_cppjit
+      - run: ./build-all.sh
+  test:
+    - run: ./build/test_cppjit
