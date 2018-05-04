@@ -1,7 +1,9 @@
 version: 2
-steps:
-        - checkout
-        - run:
-                - ./build-all.sh
-        - run:
-                - ./build/test_cppjit
+jobs:
+  build:
+    steps:
+      - checkout
+      - run:
+        - ./build-all.sh
+      - run:
+        - ./build/test_cppjit
