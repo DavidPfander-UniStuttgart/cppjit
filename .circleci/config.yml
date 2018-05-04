@@ -2,7 +2,7 @@ version: 2
 jobs:
    build:
      docker:
-       - image: circleci/ubuntu-server:latest
+       - image: circleci/18.04-curl-dind
      steps:
        - checkout
        - run: apt-get -y install git
