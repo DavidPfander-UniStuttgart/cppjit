@@ -34,6 +34,16 @@ public:
                             compile_dir + kernel_name + "_compile.log 2>&1");
 
     if (verbose) {
+      std::cout << "creating per-kernel header" << std::endl;
+    }
+
+    std::ofstream kernel_header_file(compile_dir + "cppjit_kernel.hpp");
+    kernel_header_file << "#pragma once" << std::endl;
+    kernel_header_file << "#define CPPJIT_EXPORT extern \"C\""
+                       << std::endl;
+    kernel_header_file.close();
+
+    if (verbose) {
       std::cout << "compile_cmd: " << compile_cmd << std::endl;
     }
     std::chrono::high_resolution_clock::time_point compile_start =
