@@ -214,7 +214,13 @@ public:
   //   compile_dir = path;
   // }
 
-  const std::string &get_compile_dir() { return compile_dir; }
+  const std::string &get_compile_dir() {
+    if (!compile_dir_created) {
+      throw cppjit_exception(
+          "compile dir only available after \"make_compile_dir\"");
+    }
+    return compile_dir;
+  }
 
   void set_source_inline(const std::string &source_) {
     has_source_ = true;

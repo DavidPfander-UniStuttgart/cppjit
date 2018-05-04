@@ -77,6 +77,10 @@ set(SOURCES_BUILD_WITH_CMAKE "examples/build_with_cmake.cpp")
 add_executable(build_with_cmake ${SOURCES_BUILD_WITH_CMAKE})
 target_link_libraries(build_with_cmake cppjit)
 
+set(SOURCES_STANDARD_CPP_FILE_KERNEL "examples/standard_cpp_file_kernel.cpp")
+add_executable(standard_cpp_file_kernel ${SOURCES_STANDARD_CPP_FILE_KERNEL})
+target_link_libraries(standard_cpp_file_kernel cppjit)
+
 set(SOURCES_TEST "test/test_cppjit.cpp")
 add_executable(test_cppjit ${SOURCES_TEST})
 target_link_libraries(test_cppjit cppjit)

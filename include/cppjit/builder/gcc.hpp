@@ -9,6 +9,15 @@ namespace cppjit {
 namespace builder {
 
 class gcc : public builder {
+private:
+  std::string compiler = "g++";
+  std::string linker = "g++";
+  std::string cpp_flags = "-std=c++14 -fPIC -fno-gnu-unique";
+  std::string link_flags = "-shared -fno-gnu-unique";
+  std::string include_paths = "";
+  std::string library_paths = "";
+  std::string libraries = "";
+
 public:
   gcc(const std::string &kernel_name) : builder(kernel_name) {}
 
@@ -17,10 +26,12 @@ public:
     std::string source_file(source_dir + kernel_name + ".cpp");
     std::string object_file(compile_dir + kernel_name + ".o");
     std::string library_file(compile_dir + "lib" + kernel_name + ".so");
-    std::string compile_cmd(
-        compiler + " -o " + object_file + " -c " + cpp_flags + " " +
-        include_paths + " " + source_file + " " + library_paths + " " +
-        libraries + " > " + compile_dir + kernel_name + "_compile.log 2>&1");
+    // add compile dir as special include path for dynamically generated headers
+    std::string compile_cmd(compiler + " -o " + object_file + " -c " +
+                            cpp_flags + " " + include_paths + " -I" +
+                            compile_dir + " " + source_file + " " +
+                            library_paths + " " + libraries + " > " +
+                            compile_dir + kernel_name + "_compile.log 2>&1");
 
     if (verbose) {
       std::cout << "compile_cmd: " << compile_cmd << std::endl;
@@ -33,7 +44,6 @@ public:
       read_and_print_log(compile_dir + kernel_name + "_compile.log");
     }
     if (return_value != 0) {
-
       throw cppjit_exception("error: compilation of kernel failed");
     }
 
@@ -121,15 +131,6 @@ public:
   void set_libraries(const std::string &libraries) {
     this->libraries = libraries;
   }
-
-private:
-  std::string compiler = "g++";
-  std::string linker = "g++";
-  std::string cpp_flags = "-std=c++14 -fPIC -fno-gnu-unique";
-  std::string link_flags = "-shared -fno-gnu-unique";
-  std::string include_paths = "";
-  std::string library_paths = "";
-  std::string libraries = "";
 };
 
 } // namespace builder
