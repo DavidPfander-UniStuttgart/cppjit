@@ -98,8 +98,7 @@ public:
     if (!builder) {
       throw cppjit::cppjit_exception("builder is invalid");
     }
-    // TODO: improve
-    builder->invalidate();
+    builder->clear();
     builder = builder_;
   }
   std::shared_ptr<cppjit::builder::builder> get_builder() { return builder; }
@@ -112,16 +111,13 @@ public:
       if (!this->has_inline_source()) {
         old_source_dir = builder->get_source_dir();
       }
-      builder->invalidate();
+      builder->clear();
       builder = std::make_shared<cppjit::builder::gcc>(kernel_name);
       if (!this->has_inline_source()) {
         builder->set_source_dir(old_source_dir);
       }
     }
   }
-  // void set_source_inline(const std::string &source_) {
-  //   builder->set_source_inline(source_);
-  // }
 
   void set_source_dir(const std::string &source_dir_) {
     builder->set_source_dir(source_dir_);

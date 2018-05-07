@@ -32,18 +32,6 @@ protected:
 
   void *kernel_library;
 
-  void remove_kernel_dir() {
-    if (compile_dir_created) {
-      std::string rm_kernel_tmp_dir("rm -R " + compile_dir);
-      int return_value = std::system(rm_kernel_tmp_dir.c_str());
-      if (return_value != 0) {
-        std::cerr << "could not delete kernel temporary directory" << std::endl;
-        std::terminate();
-      }
-      compile_dir_created = false;
-    }
-  }
-
 public:
   builder(const std::string &kernel_name, bool verbose = false)
       : kernel_name(kernel_name), verbose(verbose), has_source_(false),
@@ -65,7 +53,7 @@ public:
   ~builder() {
     // TODO: has separate invalidate method because of owning shared_ptr,
     // improve!
-    invalidate();
+    clear();
   }
 
   virtual void *compile_impl() = 0;
@@ -107,7 +95,8 @@ public:
     return compile();
   }
 
-  void make_compile_dir() {
+  void make_compile_dir(const std::string &compile_dir_base =
+                            detail::DEFAULT_KERNEL_COMPILE_DIR) {
     if (!compile_dir_created) {
       std::random_device rd;
       std::mt19937 mt(rd());
@@ -115,9 +104,9 @@ public:
 
       // find available name of kernel compile dir
       while (true) {
-        compile_dir = std::string(detail::DEFAULT_KERNEL_COMPILE_DIR) +
-                      kernel_name + std::string("_") +
-                      std::to_string(distribution(mt)) + std::string("/");
+        compile_dir = std::string(compile_dir_base) + kernel_name +
+                      std::string("_") + std::to_string(distribution(mt)) +
+                      std::string("/");
         std::string dir_check_cmd("test -d " + compile_dir);
         int return_value = std::system(dir_check_cmd.c_str());
         if (return_value != 0) {
@@ -232,6 +221,11 @@ public:
   //   compile_dir = path;
   // }
 
+  void set_compile_dir(const std::string &compile_base_dir) {
+    clear();
+    make_compile_dir(compile_base_dir);
+  }
+
   const std::string &get_compile_dir() {
     if (!compile_dir_created) {
       throw cppjit_exception(
@@ -264,12 +258,20 @@ public:
 
   bool has_inline_source() { return has_inline_source_; }
 
-  void invalidate() {
+  void clear() {
     if (kernel_library) {
       dlclose(kernel_library);
       kernel_library = nullptr;
     }
-    remove_kernel_dir();
+    if (compile_dir_created) {
+      std::string rm_kernel_tmp_dir("rm -R " + compile_dir);
+      int return_value = std::system(rm_kernel_tmp_dir.c_str());
+      if (return_value != 0) {
+        std::cerr << "could not delete kernel temporary directory" << std::endl;
+        std::terminate();
+      }
+      compile_dir_created = false;
+    }
   }
 
   virtual builder *clone() = 0;
