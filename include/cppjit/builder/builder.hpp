@@ -19,9 +19,10 @@ constexpr char DEFAULT_KERNEL_COMPILE_DIR[] = "./cppjit_tmp/";
 namespace builder {
 
 class builder {
-protected:
+ protected:
   std::string kernel_name;
   bool verbose;
+  bool do_cleanup;
 
   bool has_source_;
   bool has_inline_source_;
@@ -32,19 +33,29 @@ protected:
 
   void *kernel_library;
 
-public:
+ public:
   builder(const std::string &kernel_name, bool verbose = false)
-      : kernel_name(kernel_name), verbose(verbose), has_source_(false),
+      : kernel_name(kernel_name),
+        verbose(verbose),
+        do_cleanup(true),
+        has_source_(false),
         has_inline_source_(false),
         // source_dir(DEFAULT_KERNEL_COMPILE_DIR),
-        compile_dir(""), compile_dir_created(false), kernel_library(nullptr) {}
+        compile_dir(""),
+        compile_dir_created(false),
+        kernel_library(nullptr) {}
 
   // builder(const builder &) = delete;
   builder(const builder &other)
-      : kernel_name(other.kernel_name), verbose(other.verbose),
+      : kernel_name(other.kernel_name),
+        verbose(other.verbose),
+        do_cleanup(true),
         has_source_(other.has_source_),
-        has_inline_source_(other.has_inline_source_), source(other.source),
-        compile_dir(""), compile_dir_created(false), kernel_library(nullptr) {
+        has_inline_source_(other.has_inline_source_),
+        source(other.source),
+        compile_dir(""),
+        compile_dir_created(false),
+        kernel_library(nullptr) {
     if (!other.has_inline_source_) {
       source_dir = other.source_dir;
     }
@@ -95,8 +106,7 @@ public:
     return compile();
   }
 
-  void make_compile_dir(const std::string &compile_dir_base =
-                            detail::DEFAULT_KERNEL_COMPILE_DIR) {
+  void make_compile_dir(const std::string &compile_dir_base = detail::DEFAULT_KERNEL_COMPILE_DIR) {
     if (!compile_dir_created) {
       std::random_device rd;
       std::mt19937 mt(rd());
@@ -104,9 +114,8 @@ public:
 
       // find available name of kernel compile dir
       while (true) {
-        compile_dir = std::string(compile_dir_base) + kernel_name +
-                      std::string("_") + std::to_string(distribution(mt)) +
-                      std::string("/");
+        compile_dir = std::string(compile_dir_base) + kernel_name + std::string("_") +
+                      std::to_string(distribution(mt)) + std::string("/");
         std::string dir_check_cmd("test -d " + compile_dir);
         int return_value = std::system(dir_check_cmd.c_str());
         if (return_value != 0) {
@@ -137,7 +146,6 @@ public:
   }
 
   void *load_kernel() {
-
     if (kernel_library) {
       dlclose(kernel_library);
       kernel_library = nullptr;
@@ -145,7 +153,7 @@ public:
 
     std::string library_file(compile_dir + "lib" + kernel_name + ".so");
 
-    dlerror(); // clear any prior error
+    dlerror();  // clear any prior error
     kernel_library = dlopen(library_file.c_str(), RTLD_LAZY);
     char *error = dlerror();
 
@@ -156,7 +164,7 @@ public:
       throw cppjit_exception(s.str());
     }
 
-    dlerror(); // clear any prior error
+    dlerror();  // clear any prior error
     void *uncasted_function = dlsym(kernel_library, kernel_name.c_str());
     error = dlerror();
 
@@ -171,12 +179,11 @@ public:
 
   // returns nullptr in case of failure
   void *load_other_symbol(const std::string &symbol_name) {
-
     if (!kernel_library) {
       throw cppjit_exception("library has not been opened");
     }
 
-    dlerror(); // clear any prior error
+    dlerror();  // clear any prior error
     void *uncasted_function = dlsym(kernel_library, symbol_name.c_str());
     char *error = dlerror();
 
@@ -228,8 +235,7 @@ public:
 
   const std::string &get_compile_dir() {
     if (!compile_dir_created) {
-      throw cppjit_exception(
-          "compile dir only available after \"make_compile_dir\"");
+      throw cppjit_exception("compile dir only available after \"make_compile_dir\"");
     }
     return compile_dir;
   }
@@ -263,7 +269,7 @@ public:
       dlclose(kernel_library);
       kernel_library = nullptr;
     }
-    if (compile_dir_created) {
+    if (compile_dir_created && do_cleanup) {
       std::string rm_kernel_tmp_dir("rm -R " + compile_dir);
       int return_value = std::system(rm_kernel_tmp_dir.c_str());
       if (return_value != 0) {
@@ -271,11 +277,15 @@ public:
         std::terminate();
       }
       compile_dir_created = false;
+    } else {
+      compile_dir_created = false;
     }
   }
+
+  void set_do_cleanup(bool do_cleanup) { this->do_cleanup = do_cleanup; }
 
   virtual builder *clone() = 0;
 };
 
-} // namespace builder
-} // namespace cppjit
+}  // namespace builder
+}  // namespace cppjit
