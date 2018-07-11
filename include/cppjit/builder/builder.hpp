@@ -62,8 +62,6 @@ class builder {
   }
 
   ~builder() {
-    // TODO: has separate invalidate method because of owning shared_ptr,
-    // improve!
     clear();
   }
 

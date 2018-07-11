@@ -72,7 +72,7 @@ public:
     kernel_implementation = fp;
   }
 
-  bool has_builder() { return this->builder; }
+  bool has_builder() { return static_cast<bool>(this->builder); }
 
   template <class builder_class> builder_class &get_builder() {
     return *std::dynamic_pointer_cast<builder_class>(builder);
@@ -136,7 +136,7 @@ public:
     return builder->has_inline_source();
   }
 };
-}
+} // namespace cppjit
 
 #define CPPJIT_DECLARE_KERNEL(kernel_signature, kernel_name)                   \
   namespace cppjit {                                                           \
