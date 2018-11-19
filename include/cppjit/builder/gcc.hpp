@@ -30,7 +30,7 @@ public:
     std::string compile_cmd(compiler + " -o " + object_file + " -c " +
                             cpp_flags + " " + include_paths + " -I" +
                             compile_dir + " " + source_file + " " +
-                            library_paths + " " + libraries + " > " +
+                            " > " +
                             compile_dir + kernel_name + "_compile.log 2>&1");
 
     if (verbose) {
@@ -65,7 +65,7 @@ public:
     }
 
     std::string link_cmd(linker + " " + link_flags + " -o " + library_file +
-                         " " + object_file + " > " + compile_dir + kernel_name +
+                         " " + object_file + " " + library_paths + " " + libraries + " > " + compile_dir + kernel_name +
                          "_link.log 2>&1");
     if (verbose) {
       std::cout << "link_cmd: " << link_cmd << std::endl;
